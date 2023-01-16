@@ -30,9 +30,9 @@ ratio = target_size / max(height, width)
 target_h, target_w = int(height * ratio), int(width * ratio)
 proc = cv2.resize(img, (target_w, target_h), interpolation = interpolation)
 ```
-    - Line number 38 ~ 50
-    - 이 부분은 `square_size`와 `mag_ratio`에 따라 이미지의 가로와 세로 비율을 그대로 유지한 채 크기를 줄입니다.
-    - 그런데 이 코드가 정확히 왜 필요한지 잘 모르겠습니다. 사용하지 않아도 Text detection 성능에는 전혀 지장이 없는 것으로 보입니다.
+- Line number 38 ~ 50
+- 이 부분은 `square_size`와 `mag_ratio`에 따라 이미지의 가로와 세로 비율을 그대로 유지한 채 크기를 줄입니다.
+- 그런데 이 코드가 정확히 왜 필요한지 잘 모르겠습니다. 사용하지 않아도 Text detection 성능에는 전혀 지장이 없는 것으로 보입니다.
 ```python
 # make canvas and paste image
 target_h32, target_w32 = target_h, target_w
@@ -46,8 +46,8 @@ target_h, target_w = target_h32, target_w32
 
 size_heatmap = (int(target_w/2), int(target_h/2))
 ```
-    - Line number 53 ~ 63
-    - 이미지의 가로와 세로 각각을 32의 배수가 되도록 Zero pad합니다.
+- Line number 53 ~ 63
+- 이미지의 가로와 세로 각각을 32의 배수가 되도록 Zero pad합니다.
 
 # `cvt2HeatmapImg`
 - 1-channel 이미지의 Colormap을 변환합니다. 값이 큰 픽셀은 빨간색으로, 작은 픽셀은 파란색으로 나타냅니다.
