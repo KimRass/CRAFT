@@ -150,3 +150,13 @@ CRAFT(
 # Score Maps
 ## Line Score Map
 - ![036_line_score_map](https://i.imgur.com/4jQnSpN.png)
+
+# 이미지 색상에 따른 Score map의 차이
+- Original image
+  - <img src="https://i.imgur.com/VJSFTZ0.png" alt="679_original" width="600">
+- Text score map for original image
+  - <img src="https://i.imgur.com/ci6zG10.jpg" alt="679_text_score_map1" width="600">
+- Inverted image
+  - <img src="https://i.imgur.com/sm6fEMx.jpg" alt="679_inverted" width="600">
+- Text score map for inverted image
+  - <img src="https://i.imgur.com/GN6nN4h.jpg" alt="679_text_score_map2" width="600">
