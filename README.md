@@ -148,11 +148,11 @@ CRAFT(
       - "Local maxima along scanning direction" (Blue. "Control points of text polygon"의 후보들) -> "Center line of local maxima" (Yellow) -> "Line of control points" (Red. 문자 기울기 반영) -> 양 끝에 있는 문자들을 커버하기 위해 그들에 대한 "Control points of text polygon"을 정하고 최종적으로 "Polygin text instance"를 정함
 
 # Score Maps
-- (from left to right) Text score map, Link score map, Line score map
+- Text score map | Link score map | Line score map
   - <img src="https://i.imgur.com/g2xxnuI.jpg" width="1000">
 
 # Text Score Map Difference by Colors from Image
-- (from left to right) Text score map from original image, Text score map from inverted image
+- Text score map from original image | Text score map from inverted image
   - <img src="https://i.imgur.com/6EnenSj.jpg" width="800">
 - 이미지를 반전한 후에 콤마 (';')를 더 잘 Detect하는 것을 볼 수 있습니다. 아마 학습에 사용된 이미지들에서 하얀색보다는 검은색의 텍스트가 더 많이 존재했기 때문일 것으로 추측됩니다.
 
