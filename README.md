@@ -136,23 +136,28 @@ CRAFT(
 # Paper Review
 - Paper: [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
 - Reference: https://medium.com/@msmapark2/character-region-awareness-for-text-detection-craft-paper-%EB%B6%84%EC%84%9D-da987b32609c
-- OCR을 Character-level로 수행합니다.
-- Input으로 주어진 이미지의 각 픽셀마다 "Region score"와 "Affinity score"를 예측합니다.
-  - Region score: 해당 픽셀이 어떤 문자의 중심일 확률.
-  - Affiniy score: 해당 픽셀이 어떤 문자와 다른 어떤 문자의 중심일 확률. 이것을 통해 여러 문자들을 묶어서 하나의 텍스트로 인식할지 여부가 결정됩니다.
-- 다음의 세 가지를 예측할 수 있습니다; Character boxes, Word boxes, Polygons
-- Inference stage: Character region을 바탕으로 위에서 말한 세 가지를 추론하는 단계
-  - Word-level QuadBox (word-level bounding box) Inference
-    - Polygon Inference
-      - <img src="https://miro.medium.com/max/1400/1*_EyygIYQyQPqUk-w-OaKjw.png" width="400">
-      - "Local maxima along scanning direction" (Blue. "Control points of text polygon"의 후보들) -> "Center line of local maxima" (Yellow) -> "Line of control points" (Red. 문자 기울기 반영) -> 양 끝에 있는 문자들을 커버하기 위해 그들에 대한 "Control points of text polygon"을 정하고 최종적으로 "Polygin text instance"를 정함
+## Character-level Awareness;
+  - These methods mainly train their networks to localize wordlevel bounding boxes. However, they may suffer in difficult cases, such as texts that are curved, deformed, or extremely long, which are hard to detect with a single bounding box.
+  - Alternatively, character-level awareness has many advantages when handling challenging texts by linking the successive characters in a bottom-up manner.
+  - In this paper, we propose a novel text detector that localizes the individual character regions and links the detected characters to a text instance.
+  - Most methods detect text with words as its unit, but defining the extents to a word for detection is non-trivial since words can be separated by various criteria, such as meaning, spaces or color. In addition, the boundary of the word segmentation cannot be strictly defined, so the word segment itself has no distinct semantic meaning. This ambiguity in the word annotation dilutes the meaning of the ground truth for both regression and segmentation approaches.
+## Train
+- Unfortunately, most of the existing text datasets do not provide characterlevel annotations, and the work needed to obtain characterlevel ground truths is too costly.
+## Architecture
+- Our framework, referred to as CRAFT for Character Region Awareness For Text detection, is designed with a convolutional neural network producing the character region score and affinity score. The region score is used to localize individual characters in the image, and the affinity score is used to group each character into a single instance.
+- The final output has two channels as score maps: the region score and the affinity score.
+## Inference
+- *At the inference stage, the final output can be delivered in various shapes, such as word boxes or character boxes, and further polygons*.
+- Inference
+  - <img src="https://miro.medium.com/max/1400/1*_EyygIYQyQPqUk-w-OaKjw.png" width="400">
+## Link Refinement
+- In the CTW-1500 dataset’s case, two difficult characteristics coexist, namely annotations that are provided at the line-level and are of arbitrary polygons. To aid CRAFT in such cases, a small link refinement network, which we call the LinkRefiner, is used in conjunction with CRAFT.
+- *The input of the LinkRefiner is a concatenation of the region score, the affinity score, and the intermediate feature map of CRAFT, and the output is a refined affinity score adjusted for long texts. To combine characters, the refined affinity score is used instead of the original affinity score*, then the polygon generation is performed in the same way as it was performed for TotalText.
+- Only LinkRefiner is trained on the CTW-1500 dataset while freezing CRAFT. The detailed implementation of LinkRefiner is addressed in the supplementary materials. As shown in Table 2, the proposed method achieves state-of-the-art performance.
+- Atrous Spatial Pyramid Pooling (ASPP) in [2] is adopted to ensure a large receptive field for combining distant characters and words onto the same text line.
 
-# Score Maps
-- Text score map | Link score map | Line score map
-  - <img src="https://i.imgur.com/g2xxnuI.jpg" width="1000">
-
-# Text Score Map Difference by Colors from Image
-- Text score map from original image | Text score map from inverted image
+# Region Score Map Difference by Colors from Image
+- Region score map from original image | Region score map from inverted image
   - <img src="https://i.imgur.com/6EnenSj.jpg" width="800">
 - 이미지를 반전한 후에 콤마 (';')를 더 잘 Detect하는 것을 볼 수 있습니다. 아마 학습에 사용된 이미지들에서 하얀색보다는 검은색의 텍스트가 더 많이 존재했기 때문일 것으로 추측됩니다.
 
@@ -166,5 +171,5 @@ CRAFT(
   - Image splitting (Red -> Green -> Blue)
     - <img src="https://i.imgur.com/9Gnmet6.jpg" width="300">
 2. 분할된 이미지가 지정된 해상도보다 크다면 각각을 다시 분할합니다. 지정된 해상도 미만이 될 때까지 이것을 반복하여 수행합니다.
-- Text score map
+- Region score map
   - <img src="https://i.imgur.com/ZbXWURG.jpg" width="300">
