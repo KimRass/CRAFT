@@ -133,7 +133,7 @@ CRAFT(
 )
 ```
 
-# Paper Review
+# Paper Summary
 - Paper: [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
 - Reference: https://medium.com/@msmapark2/character-region-awareness-for-text-detection-craft-paper-%EB%B6%84%EC%84%9D-da987b32609c
 ## Character-level Awareness;
@@ -147,6 +147,7 @@ CRAFT(
 - Our framework, referred to as CRAFT for Character Region Awareness For Text detection, is designed with a convolutional neural network producing the character region score and affinity score. The region score is used to localize individual characters in the image, and the affinity score is used to group each character into a single instance.
 - The final output has two channels as score maps: the region score and the affinity score.
 ## Inference
+- The final output has two channels as score maps: the region score and the affinity score.
 - *At the inference stage, the final output can be delivered in various shapes, such as word boxes or character boxes, and further polygons*.
 - Inference
   - <img src="https://miro.medium.com/max/1400/1*_EyygIYQyQPqUk-w-OaKjw.png" width="400">
@@ -154,7 +155,7 @@ CRAFT(
 - In the CTW-1500 dataset’s case, two difficult characteristics coexist, namely annotations that are provided at the line-level and are of arbitrary polygons. To aid CRAFT in such cases, a small link refinement network, which we call the LinkRefiner, is used in conjunction with CRAFT.
 - *The input of the LinkRefiner is a concatenation of the region score, the affinity score, and the intermediate feature map of CRAFT, and the output is a refined affinity score adjusted for long texts. To combine characters, the refined affinity score is used instead of the original affinity score*, then the polygon generation is performed in the same way as it was performed for TotalText.
 - Only LinkRefiner is trained on the CTW-1500 dataset while freezing CRAFT. The detailed implementation of LinkRefiner is addressed in the supplementary materials. As shown in Table 2, the proposed method achieves state-of-the-art performance.
-- Atrous Spatial Pyramid Pooling (ASPP) in [2] is adopted to ensure a large receptive field for combining distant characters and words onto the same text line.
+- Atrous Spatial Pyramid Pooling (ASPP) in is adopted to ensure a large receptive field for combining distant characters and words onto the same text line.
 
 # Region Score Map Difference by Colors from Image
 - Region score map from original image | Region score map from inverted image
