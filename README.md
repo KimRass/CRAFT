@@ -134,15 +134,37 @@ CRAFT(
 ```
 
 # Paper Summary
-- Paper: [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
+- [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
 - Reference: https://medium.com/@msmapark2/character-region-awareness-for-text-detection-craft-paper-%EB%B6%84%EC%84%9D-da987b32609c
-## Character-level Awareness;
+## Character-level Awareness
   - These methods mainly train their networks to localize wordlevel bounding boxes. However, they may suffer in difficult cases, such as texts that are curved, deformed, or extremely long, which are hard to detect with a single bounding box.
   - Alternatively, character-level awareness has many advantages when handling challenging texts by linking the successive characters in a bottom-up manner.
   - In this paper, we propose a novel text detector that localizes the individual character regions and links the detected characters to a text instance.
   - Most methods detect text with words as its unit, but defining the extents to a word for detection is non-trivial since words can be separated by various criteria, such as meaning, spaces or color. In addition, the boundary of the word segmentation cannot be strictly defined, so the word segment itself has no distinct semantic meaning. This ambiguity in the word annotation dilutes the meaning of the ground truth for both regression and segmentation approaches.
 ## Train
 - Unfortunately, most of the existing text datasets do not provide characterlevel annotations, and the work needed to obtain characterlevel ground truths is too costly.
+- The training procedure includes two steps: we first use the SynthText dataset [6] to train the network for 50k iterations, then each benchmark dataset is adopted to fine-tune the model. 
+- During fine-tuning, the SynthText dataset is also used at a rate of 1:5 to make sure that the character regions are surely separated.
+- On-line Hard Negative Mining
+  - In order to filter out texture-like texts in natural scenes, On-line Hard Negative Mining [33] is applied at a ratio of 1:3.
+- Data augmentation
+  - Also, basic data augmentation techniques like crops, rotations, and/or color variations are applied.
+### Weakly-supervised Learning
+- Weakly-supervised training requires two types of data; quadrilateral annotations for cropping word images and transcriptions for calculating word length. The datasets meeting these conditions are IC13, IC15, and IC17. Other datasets such as MSRA-TD500, TotalText, and CTW-1500 do not meet the requirements. MSRA-TD500 does not pro-vide transcriptions, while TotalText and CTW-1500 provide polygon annotations only.
+- Therefore, we trained CRAFT only on the ICDAR datasets, and tested on the others with-out fine-tuning. Two different models are trained with the ICDAR datasets. The first model is trained on IC15 to eval-uate IC15 only. The second model is trained on both IC13 and IC17 together, which is used for evaluating the other five datasets. No extra images are used for training. The number of iterations for fine-tuning is set to 25k. (Comment: 이 부분이 무슨 말인지 잘 이해가 가지 않습니다.)
+### Datasets
+- ICDAR2013 (IC13):
+  - Consisting of high-resolution images, 229 for training and 233 for testing, containing texts in English. The anno-tations are at word-level using rectangular boxes.
+- ICDAR2015 (IC15):
+  - Consisting of 1,000 training images and 500 testing images, both with texts in English. The annotations are at the word level using quadrilateral boxes.
+- ICDAR2017 (IC17):
+  - Contains 7,200 training images, 1,800 validation images, and 9,000 testing images with texts in 9 languages for multi-lingual scene text detection. Similar to IC15, the text regions in IC17 are also annotated by the 4 vertices of quadrilaterals.
+- MSRA-TD500 (TD500):
+  - Contains 500 natural images, which are split into 300 training images and 200 testing im- ages, collected both indoors and outdoors using a pocket camera. The images contain English and Chinese scripts. Text regions are annotated by rotated rectangles.
+- TotalText (TotalText)
+  - Contains 1255 training and 300 testing images. It especially provides curved texts, which are annotated by polygons and word-level transcriptions.
+- CTW-1500 (CTW)
+  - Consists of 1,000 training and 500 test-ing images. Every image has curved text instances, which are annotated by polygons with 14 vertices.
 ## Architecture
 - Our framework, referred to as CRAFT for Character Region Awareness For Text detection, is designed with a convolutional neural network producing the character region score and affinity score. The region score is used to localize individual characters in the image, and the affinity score is used to group each character into a single instance.
 - The final output has two channels as score maps: the region score and the affinity score.
