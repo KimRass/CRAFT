@@ -28,6 +28,7 @@ img = load_image("/Users/jongbeomkim/Downloads/ctw-trainval-01-of-26/0000174.jpg
 plt.figure(figsize=(10, 10))
 ax = plt.gca()
 plt.imshow(img)
+list(each_char(anno))[0]
 for instance in each_char(anno):
     instance
     color = (0, 1, 0) if instance['is_chinese'] else (1, 0, 0)
