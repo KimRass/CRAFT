@@ -152,6 +152,11 @@ CRAFT(
 ### Weakly-supervised Learning
 - Weakly-supervised training requires two types of data; quadrilateral annotations for cropping word images and transcriptions for calculating word length. The datasets meeting these conditions are IC13, IC15, and IC17. Other datasets such as MSRA-TD500, TotalText, and CTW-1500 do not meet the requirements. MSRA-TD500 does not pro-vide transcriptions, while TotalText and CTW-1500 provide polygon annotations only.
 - Therefore, we trained CRAFT only on the ICDAR datasets, and tested on the others with-out fine-tuning. Two different models are trained with the ICDAR datasets. The first model is trained on IC15 to eval-uate IC15 only. The second model is trained on both IC13 and IC17 together, which is used for evaluating the other five datasets. No extra images are used for training. The number of iterations for fine-tuning is set to 25k. (Comment: 이 부분이 무슨 말인지 잘 이해가 가지 않습니다.)
+### Ground-truth Generation
+- Since character bounding boxes on an image are generally distorted via perspective projections, we use the following steps to approximate and generate the ground truth for both the region score and the affinity score:
+  - Prepare a 2-dimensional isotropic Gaussian map
+  - Compute perspective transform between the Gaussian map region and each character box
+  - Warp Gaussian map to the box area.
 ### Datasets
 - ICDAR2013 (IC13):
   - Consisting of high-resolution images, 229 for training and 233 for testing, containing texts in English. The anno-tations are at word-level using rectangular boxes.
@@ -163,7 +168,7 @@ CRAFT(
   - Contains 500 natural images, which are split into 300 training images and 200 testing im- ages, collected both indoors and outdoors using a pocket camera. The images contain English and Chinese scripts. Text regions are annotated by rotated rectangles.
 - TotalText (TotalText)
   - Contains 1255 training and 300 testing images. It especially provides curved texts, which are annotated by polygons and word-level transcriptions.
-- CTW-1500 (CTW)
+- CTW-1500 (CTW) ([SCUT-CTW1500 Datasets](https://github.com/Yuliang-Liu/Curve-Text-Detector))
   - Consists of 1,000 training and 500 test-ing images. Every image has curved text instances, which are annotated by polygons with 14 vertices.
 ## Architecture
 - Our framework, referred to as CRAFT for Character Region Awareness For Text detection, is designed with a convolutional neural network producing the character region score and affinity score. The region score is used to localize individual characters in the image, and the affinity score is used to group each character into a single instance.
