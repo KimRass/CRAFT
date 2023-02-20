@@ -23,7 +23,7 @@ def parse_jsonl_file(img_path, jsonl_path):
                 break
     return img, line
 img, line = parse_jsonl_file(
-    img_path="D:/ctw-trainval-01-of-26/0000466.jpg",
+    img_path="D:/ctw-trainval-01-of-26/1001797.jpg",
     jsonl_path="D:/ctw-annotations/train.jsonl"
 )
 show_image(img)
