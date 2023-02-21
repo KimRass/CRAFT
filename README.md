@@ -22,116 +22,7 @@ CRAFT-pytorch
 
 # Model Architecture
 - Model architecture
-  - <img src="https://miro.medium.com/max/1400/1*b6I-Bdj5itX7tllJ5HRKbg.png" width="400">
-```
-CRAFT(
-  (basenet): vgg16_bn(
-    (slice1): Sequential(
-      (0): Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): ReLU(inplace=True)
-      (3): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (4): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (5): ReLU(inplace=True)
-      (6): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-      (7): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (8): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (9): ReLU(inplace=True)
-      (10): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (11): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-    )
-    (slice2): Sequential(
-      (12): ReLU(inplace=True)
-      (13): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-      (14): Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (15): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (16): ReLU(inplace=True)
-      (17): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (18): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-    )
-    (slice3): Sequential(
-      (19): ReLU(inplace=True)
-      (20): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (21): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (22): ReLU(inplace=True)
-      (23): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-      (24): Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (25): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (26): ReLU(inplace=True)
-      (27): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (28): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-    )
-    (slice4): Sequential(
-      (29): ReLU(inplace=True)
-      (30): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (31): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (32): ReLU(inplace=True)
-      (33): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-      (34): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (35): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (36): ReLU(inplace=True)
-      (37): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (38): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-    )
-    (slice5): Sequential(
-      (0): MaxPool2d(kernel_size=3, stride=1, padding=1, dilation=1, ceil_mode=False)
-      (1): Conv2d(512, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(6, 6), dilation=(6, 6))
-      (2): Conv2d(1024, 1024, kernel_size=(1, 1), stride=(1, 1))
-    )
-  )
-  (upconv1): double_conv(
-    (conv): Sequential(
-      (0): Conv2d(1536, 512, kernel_size=(1, 1), stride=(1, 1))
-      (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): ReLU(inplace=True)
-      (3): Conv2d(512, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (4): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (5): ReLU(inplace=True)
-    )
-  )
-  (upconv2): double_conv(
-    (conv): Sequential(
-      (0): Conv2d(768, 256, kernel_size=(1, 1), stride=(1, 1))
-      (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): ReLU(inplace=True)
-      (3): Conv2d(256, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (4): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (5): ReLU(inplace=True)
-    )
-  )
-  (upconv3): double_conv(
-    (conv): Sequential(
-      (0): Conv2d(384, 128, kernel_size=(1, 1), stride=(1, 1))
-      (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): ReLU(inplace=True)
-      (3): Conv2d(128, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (4): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (5): ReLU(inplace=True)
-    )
-  )
-  (upconv4): double_conv(
-    (conv): Sequential(
-      (0): Conv2d(192, 64, kernel_size=(1, 1), stride=(1, 1))
-      (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (2): ReLU(inplace=True)
-      (3): Conv2d(64, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-      (4): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (5): ReLU(inplace=True)
-    )
-  )
-  (conv_cls): Sequential(
-    (0): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-    (1): ReLU(inplace=True)
-    (2): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-    (3): ReLU(inplace=True)
-    (4): Conv2d(32, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-    (5): ReLU(inplace=True)
-    (6): Conv2d(16, 16, kernel_size=(1, 1), stride=(1, 1))
-    (7): ReLU(inplace=True)
-    (8): Conv2d(16, 2, kernel_size=(1, 1), stride=(1, 1))
-  )
-)
-```
+- <img src="https://miro.medium.com/max/1400/1*b6I-Bdj5itX7tllJ5HRKbg.png" width="400">
 
 # Paper Summary
 - [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
@@ -153,10 +44,23 @@ CRAFT(
 - Weakly-supervised training requires two types of data; quadrilateral annotations for cropping word images and transcriptions for calculating word length. The datasets meeting these conditions are IC13, IC15, and IC17. Other datasets such as MSRA-TD500, TotalText, and CTW-1500 do not meet the requirements. MSRA-TD500 does not pro-vide transcriptions, while TotalText and CTW-1500 provide polygon annotations only.
 - Therefore, we trained CRAFT only on the ICDAR datasets, and tested on the others with-out fine-tuning. Two different models are trained with the ICDAR datasets. The first model is trained on IC15 to eval-uate IC15 only. The second model is trained on both IC13 and IC17 together, which is used for evaluating the other five datasets. No extra images are used for training. The number of iterations for fine-tuning is set to 25k. (Comment: 이 부분이 무슨 말인지 잘 이해가 가지 않습니다.)
 ### Ground-truth Generation
+- Ground-truth generation procedure
+  - <img src="https://miro.medium.com/v2/resize:fit:4800/format:webp/1*u9A_-mrjJF_yd7EtTEz-dA.png" width="600">
 - Since character bounding boxes on an image are generally distorted via perspective projections, we use the following steps to approximate and generate the ground truth for both the region score and the affinity score:
   - Prepare a 2-dimensional isotropic Gaussian map
   - Compute perspective transform between the Gaussian map region and each character box
   - Warp Gaussian map to the box area.
+- Affinity score map
+  - For the ground truths of the affinity score, the affinity boxes are defined using adjacent character boxes. By drawing diagonal lines to connect opposite corners of each character box, we can generate two triangles – which we will refer to as the upper and lower character triangles. Then, for each adjacent character box pair, an affinity box is generated by setting the centers of the upper and lower triangles as corners of the box. (Comment: 논문에는 Triangle center가 정확히 무엇을 의미하는지 나와 있지 않습니다. Triangle center에는 Centroid (무게중심), Incenter (내심), Circumcenter (외심), Orthocenter (수심) 등이 있는데, 아마 Centroid를 사용하는 것으로 보입니다. ['NENET: An Edge Learnable Network for Link Prediction in Scene Text'](https://arxiv.org/pdf/2005.12147.pdf)에서도 Centroid를 사용한다고 설명합니다.)
+### Loss
+$$L = \sum_{p} {S_{c}(p) \cdot (\lVert S_{r}(p) - S_{r}^{*}(p) \rVert_{2}^{2} + \lVert S_{a}(p) - S_{a}^{*}(p)\rVert_{2}^{2})}$$
+- $S_{c}(p)$: Confidence score
+- $S_{r}^{*}(p)$: (Pseudo) Ground-truth region score
+- $S_{r}(p)$: Predicted region score
+- $S_{a}^{*}(p)$: (Pseudo) Ground-truth affinity score
+- $S_{a}(p)$: Predicted affinity score
+- When training with synthetic data, we can obtain the real ground truth, so $S_{c}(p) = 1$.
+- (Comment: Squared L2 norm $\lVert x \rVert_{2}^{2} := x_{1}^{2} + x_{2}^{2} + \cdots + x_{n}^{2}$)
 ### Datasets
 - ICDAR2013 (IC13):
   - Consisting of high-resolution images, 229 for training and 233 for testing, containing texts in English. The anno-tations are at word-level using rectangular boxes.
@@ -166,8 +70,8 @@ CRAFT(
   - Contains 7,200 training images, 1,800 validation images, and 9,000 testing images with texts in 9 languages for multi-lingual scene text detection. Similar to IC15, the text regions in IC17 are also annotated by the 4 vertices of quadrilaterals.
 - MSRA-TD500 (TD500):
   - Contains 500 natural images, which are split into 300 training images and 200 testing im- ages, collected both indoors and outdoors using a pocket camera. The images contain English and Chinese scripts. Text regions are annotated by rotated rectangles.
-- TotalText (TotalText)
-  - Contains 1255 training and 300 testing images. It especially provides curved texts, which are annotated by polygons and word-level transcriptions.
+- TotalText (TotalText) ([Total-Text-Dataset](https://github.com/cs-chan/Total-Text-Dataset))
+  - Contains 1,255 training and 300 testing images. It especially provides curved texts, which are annotated by polygons and word-level transcriptions.
 - CTW-1500 (CTW) ([SCUT-CTW1500 Datasets](https://github.com/Yuliang-Liu/Curve-Text-Detector))
   - Consists of 1,000 training and 500 test-ing images. Every image has curved text instances, which are annotated by polygons with 14 vertices.
 ## Architecture
@@ -201,3 +105,6 @@ CRAFT(
 2. 분할된 이미지가 지정된 해상도보다 크다면 각각을 다시 분할합니다. 지정된 해상도 미만이 될 때까지 이것을 반복하여 수행합니다.
 - Region score map
   - <img src="https://i.imgur.com/ZbXWURG.jpg" width="300">
+
+# Other Papers
+- [Character Region Attention For Text Spotting](https://arxiv.org/pdf/2007.09629.pdf)

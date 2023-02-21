@@ -164,3 +164,20 @@ def show_image(img1, img2=None, alpha=0.5):
         )
         img_blended = Image.blend(im1=img1, im2=img2, alpha=alpha)
         img_blended.show()
+
+
+def _dilate_mask(mask, kernel_shape=(3, 3), iterations=1):
+    kernel = cv2.getStructuringElement(
+        shape=cv2.MORPH_RECT, ksize=(kernel_shape[1], kernel_shape[0])
+    )
+    if mask.dtype == "bool":
+        mask = mask.astype("uint8") * 255
+    mask = cv2.dilate(src=mask, kernel=kernel, iterations=iterations)
+    return mask
+
+
+def _get_image_cropped_by_bboxes(img, xmin, ymin, xmax, ymax):
+    if img.ndim == 3:
+        return img[ymin: ymax, xmin: xmax, :]
+    else:
+        return img[ymin: ymax, xmin: xmax]
