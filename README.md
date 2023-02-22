@@ -60,7 +60,7 @@ $$L = \sum_{p} {S_{c}(p) \cdot (\lVert S_{r}(p) - S_{r}^{*}(p) \rVert_{2}^{2} + 
 - $S_{a}^{*}(p)$: (Pseudo) Ground-truth affinity score
 - $S_{a}(p)$: Predicted affinity score
 - When training with synthetic data, we can obtain the real ground truth, so $S_{c}(p) = 1$.
-- (Comment: Squared L2 norm $\lVert x \rVert_{2}^{2} := x_{1}^{2} + x_{2}^{2} + \cdots + x_{n}^{2}$)
+- (Comment: L1 norm: $\lVert x \rVert_{1} := \lvert x_{1} \rvert + \lvert x_{2} \rvert + \cdots + \lvert x_{n} \rvert$), L2 norm: $\lVert x \rVert_{2} := \sqrt{x_{1}^{2} + x_{2}^{2} + \cdots + x_{n}^{2}}$))
 ### Datasets
 - ICDAR2013 (IC13):
   - Consisting of high-resolution images, 229 for training and 233 for testing, containing texts in English. The anno-tations are at word-level using rectangular boxes.

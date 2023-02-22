@@ -33,12 +33,10 @@ def parse_jsonl_file(img_path, jsonl_path):
     return img, line
 
 
-
-def get_cropped_images_and_labels(img_path, jsonl_path, thresh=100_000):
+def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, px_thresh=100_000):
     img, line = parse_jsonl_file(img_path=img_path, jsonl_path=jsonl_path)
 
-    size = 200
-    gaussian_map = _get_2d_isotropic_gaussian_map(width=size, height=size)
+    gaussian_map = _get_2d_isotropic_gaussian_map(width=size, height=size, sigma=sigma)
     region_score_map = get_region_score_map(img=img, annots=line["annotations"], gaussian_map=gaussian_map)
     affinity_score_map = get_affinity_score_map(img=img, annots=line["annotations"], gaussian_map=gaussian_map)
 
@@ -52,14 +50,14 @@ def get_cropped_images_and_labels(img_path, jsonl_path, thresh=100_000):
         height = stats[k, cv2.CC_STAT_HEIGHT]
         smaller = min(width, height)
 
-        dilated_label = _dilate_mask(mask=(segmentation_map == k), kernel_shape=(smaller, smaller), iterations=8)
+        dilated_label = _dilate_mask(mask=(segmentation_map == k), kernel_shape=(smaller, smaller), iterations=6)
         dilated_region_mask = np.maximum(dilated_region_mask, dilated_label)
 
     _, _, stats, _ = cv2.connectedComponentsWithStats(image=_convert_to_2d(dilated_region_mask), connectivity=4)
     data = defaultdict(list)
     for xmin, ymin, width, height, pixel_count in stats[1:]:
         pixel_count
-        if pixel_count >= thresh:
+        if pixel_count >= px_thresh:
             img_patch = _get_image_cropped_by_bboxes(
                 img=img, xmin=xmin, ymin=ymin, xmax=xmin + width, ymax=ymin + height
             )
@@ -77,34 +75,26 @@ def get_cropped_images_and_labels(img_path, jsonl_path, thresh=100_000):
 
 
 if "__name__" == "__main__":
-    out_dir = Path("/Users/jongbeomkim/Downloads/out")
+    out_dir = Path("/Users/jongbeomkim/Downloads/out2")
     jsonl_path="/Users/jongbeomkim/Downloads/ctw-annotations/train.jsonl"
 
     in_dir = Path("/Users/jongbeomkim/Downloads/ctw-trainval-17-of-26")
     for img_path in tqdm(list(in_dir.glob("**/*.jpg"))):
-        data = get_cropped_images_and_labels(img_path=img_path, jsonl_path=jsonl_path)
+        data = get_cropped_images_and_labels(img_path=img_path, jsonl_path=jsonl_path, sigma=0.25)
         for idx, (img, region_score_map, affinity_score_map) in enumerate(
             zip(data["image"], data["region_score_map"], data["affinity_score_map"])
         ):
-            save_image(img1=img, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_image.jpg")
-            save_image(img1=region_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_region.jpg")
-            save_image(img1=affinity_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_affinity.jpg")
-        
-
-# def each_char(image_anno):
-#     for block in image_anno['annotations']:
-#         for char in block:
-#             yield char
+            save_image(img1=img, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_image.png")
+            save_image(img1=region_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_region.png")
+            save_image(img1=affinity_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_affinity.png")
 
 
-
-
-# plt.figure(figsize=(10, 10))
-# ax = plt.gca()
-# plt.imshow(img)
-# for instance in each_char(line):
-#     color = (0, 1, 0) if instance['is_chinese'] else (1, 0, 0)
-#     ax.add_patch(
-#         patches.Polygon(instance['polygon'], fill=False, color=color)
-#     )
-# plt.show()
+    # img_path = "/Users/jongbeomkim/Downloads/ctw-trainval-17-of-26/3005039.jpg"
+    # data = get_cropped_images_and_labels(img_path=img_path, jsonl_path=jsonl_path, sigma=0.25)
+    # save_image(
+    #     img1=data["region_score_map"][0], img2=data["image"][0], alpha=0.3, path="/Users/jongbeomkim/Downloads/temp1.jpg"
+    # )
+    # region, _, _ = get_score_maps(data["image"][0], craft, None, False)
+    # save_image(
+    #     img1=region, img2=data["image"][0], alpha=0.3, path="/Users/jongbeomkim/Downloads/temp2.jpg"
+    # )

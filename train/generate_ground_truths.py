@@ -26,9 +26,15 @@ def _get_2d_isotropic_gaussian_map(width, height, sigma=0.5):
     return gaussian_map
 
 
-def get_region_score_map(img, annots, gaussian_map):
+def get_region_score_map(img, annots, gaussian_map, margin=0.3):
     gwidth, gheight = _get_width_and_height(gaussian_map)
-    pts1 = np.array([[0, 0], [gwidth, 0], [gwidth, gheight], [0, gheight]], dtype="float32")
+    left = gwidth * margin
+    top = gheight * margin
+    right = gwidth * (1 - margin)
+    bottom = gheight * (1 - margin)
+    pts1 = np.array(
+        [[left, top], [right, top], [right, bottom], [left, bottom]], dtype="float32"
+    )
 
     img_width, img_height = _get_width_and_height(img)
     region_score_map = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
@@ -53,8 +59,16 @@ def _get_intersection_of_quarliateral(p11, p21, p12, p22):
     return np.array(inter[0].evalf())
 
 
-def get_affinity_score_map(img, annots, gaussian_map):
+def get_affinity_score_map(img, annots, gaussian_map, margin=0.3):
     gwidth, gheight = _get_width_and_height(gaussian_map)
+    gwidth, gheight = _get_width_and_height(gaussian_map)
+    left = gwidth * margin
+    top = gheight * margin
+    right = gwidth * (1 - margin)
+    bottom = gheight * (1 - margin)
+    pts1 = np.array(
+        [[left, top], [right, top], [right, bottom], [left, bottom]], dtype="float32"
+    )
     pts1 = np.array([[0, 0], [gwidth, 0], [gwidth, gheight], [0, gheight]], dtype="float32")
 
     img_width, img_height = _get_width_and_height(img)

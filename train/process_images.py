@@ -38,9 +38,19 @@ def _convert_to_array(img):
     return img
 
 
-def _change_colormap_to_jet(img):
+
+def _apply_jet_colormap(img):
     img_jet = cv2.applyColorMap(src=(255 - img), colormap=cv2.COLORMAP_JET)
     return img_jet
+
+
+def _reverse_jet_colormap(img):
+    gray_values = np.arange(256, dtype=np.uint8)
+    color_values = list(map(tuple, _apply_jet_colormap(gray_values).reshape(256, 3)))
+    color_to_gray_map = dict(zip(color_values, gray_values))
+
+    out = np.apply_along_axis(lambda bgr: color_to_gray_map[tuple(bgr)], axis=2, arr=img)
+    return out
 
 
 def _repaint_segmentation_map(segmentation_map, n_color_values=3):

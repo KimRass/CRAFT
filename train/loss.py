@@ -2,7 +2,12 @@
 
 import torch
 import torch.nn as nn
+import torchvision.transforms as T
 
 
-criterion = nn.MSELoss(reduction="sum")
-criterion(gt_region, pred_region)
+gt_region = data["region_score_map"][0]
+pred_region = region
+
+criterion = nn.MSELoss(reduction="none")
+criterion(T.ToTensor()(gt_region), T.ToTensor()(pred_region))[0][100, 100]
+
