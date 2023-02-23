@@ -3,6 +3,7 @@ import cv2
 from PIL import Image
 from itertools import product
 from pathlib import Path
+import requests
 
 
 def _convert_to_2d(img):
@@ -36,7 +37,6 @@ def _convert_to_pil(img):
 def _convert_to_array(img):
     img = np.array(img)
     return img
-
 
 
 def _apply_jet_colormap(img):
@@ -90,7 +90,7 @@ def _preprocess_image(img):
         ):
             img = _convert_to_3d(img)
         else:
-            img = _change_colormap_to_jet(img)
+            img = _apply_jet_colormap(img)
     return img
 
 
@@ -191,3 +191,12 @@ def _get_image_cropped_by_bboxes(img, xmin, ymin, xmax, ymax):
         return img[ymin: ymax, xmin: xmax, :]
     else:
         return img[ymin: ymax, xmin: xmax]
+
+
+def _resize_image(img, width, height):
+    resized_img = cv2.resize(src=img, dsize=(width, height))
+    return resized_img
+
+
+def _downsample_image(img):
+    return cv2.pyrDown(img)
