@@ -11,20 +11,12 @@ import torchvision.transforms as T
 from process_images import (
     load_image
 )
-from datasets.ctw.prepare_ctw import (
+from train.datasets.ctw.prepare_ctw import (
     CTWDataset
 )
-
-
-# gt_region = region_score_map
-# pred_region = affinity_score_map
-
-# criterion = nn.MSELoss(reduction="none")
-# # criterion = nn.MSELoss(reduce=False, size_average=False)
-# criterion(gt_region, pred_region)
-
-
-
+from train.loss import (
+    ScoreMapLoss
+)
 
 
 # craft = CRAFT()
@@ -35,9 +27,7 @@ weight_decay = 5e-4
 optim.Adam(params=craft.parameters(), lr=lr, weight_decay=weight_decay)
 
 
-
-
-ctw_ds = CTWDataset(data_dir="D:/ctw_out")
+ctw_ds = CTWDataset(data_dir="/Users/jongbeomkim/Downloads/out2")
 ctw_dl = DataLoader(dataset=ctw_ds, batch_size=4, shuffle=True, num_workers=0)
 for batch, (img, region_score_map, affinity_score_map) in enumerate(ctw_dl):
     img.shape, region_score_map.shape

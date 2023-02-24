@@ -29,8 +29,9 @@ def load_craft_checkpoint(cuda=False):
 
 
 def _convert_to_uint8(score_map):
+    score_map = np.clip(a=score_map, a_min=0, a_max=1)
     score_map *= 255
-    score_map = score_map.astype(np.uint8)
+    score_map = score_map.astype("uint8")
     return score_map
 
 

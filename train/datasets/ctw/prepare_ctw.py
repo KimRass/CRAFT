@@ -119,10 +119,13 @@ class CTWDataset(Dataset):
 
 
 if "__name__" == "__main__":
-    out_dir = Path("D:/ctw_out")
-    jsonl_path="D:/ctw-annotations/train.jsonl"
+    # out_dir = Path("D:/ctw_out")
+    out_dir = Path("/Users/jongbeomkim/Downloads/out2")
+    # jsonl_path = "D:/ctw-annotations/train.jsonl"
+    jsonl_path = "/Users/jongbeomkim/Downloads/ctw-annotations/train.jsonl"
 
-    in_dir = Path("D:/ctw-trainval-01-of-26")
+    # in_dir = Path("D:/ctw-trainval-01-of-26")
+    in_dir = Path("/Users/jongbeomkim/Downloads/ctw-trainval-17-of-26")
     for img_path in tqdm(list(in_dir.glob("**/*.jpg"))):
         img, region_score_map, affinity_score_map = get_cropped_images_and_labels(
             img_path=img_path, jsonl_path=jsonl_path, sigma=0.25, crop=False
@@ -137,7 +140,6 @@ if "__name__" == "__main__":
         #     save_image(img1=img, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_image.jpg")
         #     save_image(img1=region_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_region.png")
         #     save_image(img1=affinity_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_affinity.png")
-
 
     # img_path = "/Users/jongbeomkim/Downloads/ctw-trainval-17-of-26/3005039.jpg"
     # data = get_cropped_images_and_labels(img_path=img_path, jsonl_path=jsonl_path, sigma=0.25)

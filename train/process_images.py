@@ -108,6 +108,32 @@ def _get_canvas_same_size_as_image(img, black=False):
         return (np.ones_like(img) * 255).astype("uint8")
 
 
+def _dilate_mask(mask, kernel_shape=(3, 3), iterations=1):
+    kernel = cv2.getStructuringElement(
+        shape=cv2.MORPH_RECT, ksize=(kernel_shape[1], kernel_shape[0])
+    )
+    if mask.dtype == "bool":
+        mask = mask.astype("uint8") * 255
+    mask = cv2.dilate(src=mask, kernel=kernel, iterations=iterations)
+    return mask
+
+
+def _get_image_cropped_by_bboxes(img, xmin, ymin, xmax, ymax):
+    if img.ndim == 3:
+        return img[ymin: ymax, xmin: xmax, :]
+    else:
+        return img[ymin: ymax, xmin: xmax]
+
+
+def _resize_image(img, width, height):
+    resized_img = cv2.resize(src=img, dsize=(width, height))
+    return resized_img
+
+
+def _downsample_image(img):
+    return cv2.pyrDown(img)
+
+
 def load_image(url_or_path="", gray=False):
     url_or_path = str(url_or_path)
 
@@ -174,29 +200,3 @@ def show_image(img1, img2=None, alpha=0.5):
         )
         img_blended = Image.blend(im1=img1, im2=img2, alpha=alpha)
         img_blended.show()
-
-
-def _dilate_mask(mask, kernel_shape=(3, 3), iterations=1):
-    kernel = cv2.getStructuringElement(
-        shape=cv2.MORPH_RECT, ksize=(kernel_shape[1], kernel_shape[0])
-    )
-    if mask.dtype == "bool":
-        mask = mask.astype("uint8") * 255
-    mask = cv2.dilate(src=mask, kernel=kernel, iterations=iterations)
-    return mask
-
-
-def _get_image_cropped_by_bboxes(img, xmin, ymin, xmax, ymax):
-    if img.ndim == 3:
-        return img[ymin: ymax, xmin: xmax, :]
-    else:
-        return img[ymin: ymax, xmin: xmax]
-
-
-def _resize_image(img, width, height):
-    resized_img = cv2.resize(src=img, dsize=(width, height))
-    return resized_img
-
-
-def _downsample_image(img):
-    return cv2.pyrDown(img)
