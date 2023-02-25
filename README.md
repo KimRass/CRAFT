@@ -33,7 +33,7 @@ CRAFT-pytorch
   - In this paper, we propose a novel text detector that localizes the individual character regions and links the detected characters to a text instance.
   - Most methods detect text with words as its unit, but defining the extents to a word for detection is non-trivial since words can be separated by various criteria, such as meaning, spaces or color. In addition, the boundary of the word segmentation cannot be strictly defined, so the word segment itself has no distinct semantic meaning. This ambiguity in the word annotation dilutes the meaning of the ground truth for both regression and segmentation approaches.
 ## Train
-- Unfortunately, most of the existing text datasets do not provide characterlevel annotations, and the work needed to obtain characterlevel ground truths is too costly.
+- Unfortunately, most of the existing text datasets do not provide characterlevel annotations, and the work needed to obtain character level ground truths is too costly.
 - The training procedure includes two steps: we first use the SynthText dataset [6] to train the network for 50k iterations, then each benchmark dataset is adopted to fine-tune the model. 
 - During fine-tuning, the SynthText dataset is also used at a rate of 1:5 to make sure that the character regions are surely separated.
 - On-line Hard Negative Mining
@@ -64,7 +64,7 @@ $$L = \sum_{p} { S_{c}(p) \cdot \big( \lVert S_{r}(p) - S_{r}^{\*}(p) \rVert _{2
 - Comment: Norm
 $$\lVert \textbf{x} \rVert_{p} := \Bigl(\sum \lvert x_{i} \rvert^{p}\Bigr)^{1/p}$$
 - 그런데 사실상 Region score map과 Affinity score map은 2차원이므로 $p$에서 스칼라를 가집니다. 따라서 $L$은 그냥 다음과 같습니다.
-$$L = \sum_{p} { S_{c}(p) \cdot \Big\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{2} + \big( S_{a}(p) - S_{a}^{\*}(p) \big) ^{2} \Big\} }$$
+$$L = \sum_{p} { S_{c}(p) \cdot \Big{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{2} + \big( S_{a}(p) - S_{a}^{\*}(p) \big) ^{2} \Big} }$$
 ### Datasets
 - ICDAR2013 (IC13):
   - Consisting of high-resolution images, 229 for training and 233 for testing, containing texts in English. The anno-tations are at word-level using rectangular boxes.
