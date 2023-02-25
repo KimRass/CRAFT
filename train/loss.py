@@ -5,17 +5,18 @@ import torch.nn as nn
 
 
 class ScoreMapLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, ohem=True):
         super().__init__()
+        self.ohem = ohem
 
-    def perform_ohem(self, loss, gt):
+    def _get_total_loss_using_ohem(self, loss_map, gt):
         is_pos_pixel = (gt > 0.1).float()
         n_pos_pixels = int(torch.sum(is_pos_pixel))
-        pos_loss_map = loss * is_pos_pixel
+        pos_loss_map = loss_map * is_pos_pixel
 
         is_neg_pixel = 1. - is_pos_pixel
         n_neg_pixels = int(torch.sum(is_neg_pixel))
-        neg_loss_map = loss * is_neg_pixel
+        neg_loss_map = loss_map * is_neg_pixel
 
         tot_pos_loss = torch.sum(pos_loss_map) / n_pos_pixels
 
@@ -32,23 +33,22 @@ class ScoreMapLoss(nn.Module):
         tot_loss = tot_pos_loss + tot_neg_loss
         return tot_loss
 
-    def forward(self, gt_region, pred_region, gt_affinity, pred_affinity, confidence_map=None, ohem=True):
-        if ohem:
-            criterion = nn.MSELoss(reduction="none")
-        else:
-            criterion = nn.MSELoss(reduction="sum")
+    def forward(self, gt_region, pred_region, gt_affinity, pred_affinity, confidence_map=None):
+        criterion = nn.MSELoss(reduction="none")
 
-        assert gt_region.size() == pred_region.size() and gt_affinity.size() == pred_affinity.size()
-        region_loss = criterion(pred_region, gt_region)
-        affinity_loss = criterion(pred_affinity, gt_affinity)
+        region_loss_map = criterion(gt_region, pred_region)
+        affinity_loss_map = criterion(gt_affinity, pred_affinity)
         if confidence_map is not None:
-            region_loss = torch.mul(region_loss, confidence_map)
-            affinity_loss = torch.mul(affinity_loss, confidence_map)
+            region_loss_map = torch.mul(region_loss_map, confidence_map)
+            affinity_loss_map = torch.mul(affinity_loss_map, confidence_map)
 
-        if ohem:
-            region_loss = self.perform_ohem(loss=region_loss, gt=gt_region)
-            affinity_loss = self.perform_ohem(loss=affinity_loss, gt=gt_affinity)
-        return region_loss + affinity_loss
+        if self.ohem:
+            tot_region_loss = self._get_total_loss_using_ohem(loss_map=region_loss_map, gt=gt_region)
+            tot_affinity_loss = self._get_total_loss_using_ohem(loss_map=affinity_loss_map, gt=gt_affinity)
+        else:
+            tot_region_loss = torch.sum(region_loss_map)
+            tot_affinity_loss = torch.sum(affinity_loss_map)
+        return tot_region_loss + tot_affinity_loss
 
 
 if __name__ == "__main__":

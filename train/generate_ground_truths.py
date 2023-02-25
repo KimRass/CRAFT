@@ -5,9 +5,7 @@ from sympy import Point2D, Line
 from process_images import (
     _convert_to_2d,
     _get_canvas_same_size_as_image,
-    _get_width_and_height,
-    _dilate_mask,
-    _get_image_cropped_by_bboxes
+    _get_width_and_height
 )
 
 
@@ -60,7 +58,6 @@ def _get_intersection_of_quarliateral(p11, p21, p12, p22):
 
 
 def get_affinity_score_map(img, annots, gaussian_map, margin=0.3):
-    gwidth, gheight = _get_width_and_height(gaussian_map)
     gwidth, gheight = _get_width_and_height(gaussian_map)
     left = gwidth * margin
     top = gheight * margin

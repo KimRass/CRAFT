@@ -1,2 +1,2 @@
-# Dataset
 - [A Large Chinese Text Dataset in the Wild](https://ctwdataset.github.io/)
+- 이미지 내 모든 텍스트가 아닌 중국어에 대해서만 Label되어 있어 Scene text removal의 데이터셋으로서 사용하기는 어렵습니다. 중국어 외 텍스트에 대한 성능이 오히려 감소할 위험이 있기 때문입니다.

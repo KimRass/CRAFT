@@ -37,7 +37,7 @@ def parse_jsonl_file(img_path, jsonl_path):
     return img, line
 
 
-def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, crop=False, px_thresh=100_000):
+def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, crop=False, px_thresh=100_000, dilate=2):
     img, line = parse_jsonl_file(img_path=img_path, jsonl_path=jsonl_path)
 
     gaussian_map = _get_2d_isotropic_gaussian_map(width=size, height=size, sigma=sigma)
@@ -56,8 +56,9 @@ def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, cro
             height = stats[k, cv2.CC_STAT_HEIGHT]
             smaller = min(width, height)
 
-            dilated_label = _dilate_mask(mask=(segmentation_map == k), kernel_shape=(smaller, smaller), iterations=6)
+            dilated_label = _dilate_mask(mask=(segmentation_map == k), kernel_shape=(smaller, smaller), iterations=dilate)
             dilated_region_mask = np.maximum(dilated_region_mask, dilated_label)
+        # show_image(dilated_region_mask, img)
 
         _, _, stats, _ = cv2.connectedComponentsWithStats(image=_convert_to_2d(dilated_region_mask), connectivity=4)
         data = defaultdict(list)
@@ -79,7 +80,7 @@ def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, cro
         return data
 
 
-class CTWDataset(Dataset): 
+class CTWDataset(Dataset):
     def __init__(self, data_dir):
         self.data_dir = Path(data_dir)
         self.ls_prefix = sorted(
@@ -96,7 +97,7 @@ class CTWDataset(Dataset):
         )
         self.transform_score_map = T.ToTensor()
     def __len__(self):
-        return len(self.ls_prefix) // 3
+        return len(self.ls_prefix)
 
     def __getitem__(self, idx):
         prefix = self.ls_prefix[idx]
@@ -126,27 +127,20 @@ if "__name__" == "__main__":
 
     # in_dir = Path("D:/ctw-trainval-01-of-26")
     in_dir = Path("/Users/jongbeomkim/Downloads/ctw-trainval-17-of-26")
-    for img_path in tqdm(list(in_dir.glob("**/*.jpg"))):
+    for img_path in tqdm(sorted(list(in_dir.glob("**/*.jpg")))):
         img, region_score_map, affinity_score_map = get_cropped_images_and_labels(
             img_path=img_path, jsonl_path=jsonl_path, sigma=0.25, crop=False
         )
         save_image(img1=img, path=out_dir/f"{img_path.stem}_image.jpg")
         save_image(img1=region_score_map, path=out_dir/f"{img_path.stem}_region.png")
         save_image(img1=affinity_score_map, path=out_dir/f"{img_path.stem}_affinity.png")
-        # data = get_cropped_images_and_labels(img_path=img_path, jsonl_path=jsonl_path, sigma=0.25, crop=True)
+
+        # data = get_cropped_images_and_labels(
+        #     img_path=img_path, jsonl_path=jsonl_path, sigma=0.25, crop=True, px_thresh=50_000, dilate=2
+        # )
         # for idx, (img, region_score_map, affinity_score_map) in enumerate(
         #     zip(data["image"], data["region_score_map"], data["affinity_score_map"])
         # ):
         #     save_image(img1=img, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_image.jpg")
         #     save_image(img1=region_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_region.png")
         #     save_image(img1=affinity_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_affinity.png")
-
-    # img_path = "/Users/jongbeomkim/Downloads/ctw-trainval-17-of-26/3005039.jpg"
-    # data = get_cropped_images_and_labels(img_path=img_path, jsonl_path=jsonl_path, sigma=0.25)
-    # save_image(
-    #     img1=data["region_score_map"][0], img2=data["image"][0], alpha=0.3, path="/Users/jongbeomkim/Downloads/temp1.jpg"
-    # )
-    # region, _, _ = get_score_maps(data["image"][0], craft, None, False)
-    # save_image(
-    #     img1=region, img2=data["image"][0], alpha=0.3, path="/Users/jongbeomkim/Downloads/temp2.jpg"
-    # )

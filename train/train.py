@@ -8,6 +8,9 @@ from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 # from torchvision.datasets import ImageFolder
 
+from utilities import (
+    get_arguments
+)
 from process_images import (
     load_image
 )
@@ -17,21 +20,69 @@ from train.datasets.ctw.prepare_ctw import (
 from train.loss import (
     ScoreMapLoss
 )
-
-
-# craft = CRAFT()
-craft = load_craft_checkpoint(lang="ko", cuda=False)
-# craft = DataParallel(craft).cuda()
-lr = 1e-4
-weight_decay = 5e-4
-optim.Adam(params=craft.parameters(), lr=lr, weight_decay=weight_decay)
-
-
-ctw_ds = CTWDataset(data_dir="/Users/jongbeomkim/Downloads/out2")
-ctw_dl = DataLoader(dataset=ctw_ds, batch_size=4, shuffle=True, num_workers=0)
-for batch, (img, region_score_map, affinity_score_map) in enumerate(ctw_dl):
-    img.shape, region_score_map.shape
-    
-region_score_map = _reverse_jet_colormap(
-    load_image("D:/ctw_out/0000172_region.png")
+from train.craft_utilities import (
+    load_craft_checkpoint
 )
+
+def train(data_dir):
+    torch.manual_seed(777)
+    cuda = torch.cuda.is_available()
+
+    n_epochs = 2
+    batch_size = 2
+    lr = 1e-4
+    weight_decay = 5e-4
+    print_every = 4
+    save_every = 4 * 2
+
+    craft = load_craft_checkpoint(cuda)
+    optimizer = optim.Adam(params=craft.parameters(), lr=lr, weight_decay=weight_decay)
+
+    # ctw_ds = CTWDataset("/Users/jongbeomkim/Desktop/workspace/craft/train/datasets/ctw/samples")
+    ctw_ds = CTWDataset(data_dir)
+    ctw_dl = DataLoader(dataset=ctw_ds, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=True, pin_memory=True)
+
+    criterion = ScoreMapLoss(ohem=True)
+
+    craft.train()
+    for epoch in range(1, n_epochs + 1):
+        running_loss = 0
+        for step, (img, gt_region, gt_affinity) in enumerate(ctw_dl, start=1):
+            if cuda:
+                img = img.cuda()
+                gt_region = gt_region.cuda()
+                gt_affinity = gt_affinity.cuda()
+
+            optimizer.zero_grad()
+
+            out, _ = craft(img)
+            pred_region = out[..., 0].unsqueeze(1)
+            pred_affinity = out[..., 1].unsqueeze(1)
+
+            loss = criterion(
+                gt_region=gt_region,
+                pred_region=pred_region,
+                gt_affinity=gt_affinity,
+                pred_affinity=pred_affinity
+            )
+
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+
+            if step % print_every == 0:
+                print(f"|Epoch: {epoch} | Step: {step} | Total loss during the last {print_every} steps: {running_loss} |")
+
+                running_loss = 0
+
+            if step & save_every == 0:
+                torch.save(
+                    craft.state_dict(),
+                    Path(__file__).parent/f"train_logs/test{step}.pth"
+                )
+
+if __name__ == "__main__":
+    args = get_arguments
+
+    train(args.data_dir)

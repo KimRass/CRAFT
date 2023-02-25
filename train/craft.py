@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.vgg16_bn import (
+from train.vgg16_bn import (
     vgg16_bn
 )
 from torch_utilities import (
