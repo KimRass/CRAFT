@@ -83,6 +83,6 @@ def train(data_dir):
                 )
 
 if __name__ == "__main__":
-    args = get_arguments
+    args = get_arguments()
 
     train(args.data_dir)
