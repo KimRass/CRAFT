@@ -14,8 +14,8 @@ def load_craft_checkpoint(cuda=False):
     if cuda:
         craft = craft.to("cuda")
 
-    # ckpt_path = Path(__file__).parent/"pretrained/craft_mlt_25k.pth"
-    ckpt_path = "/Users/jongbeomkim/Desktop/workspace/image_processing_server/pretrained/craft.pth"
+    ckpt_path = Path(__file__).parent/"pretrained/craft_mlt_25k.pth"
+    # ckpt_path = "/Users/jongbeomkim/Desktop/workspace/image_processing_server/pretrained/craft.pth"
     state_dict = _get_state_dict(
         ckpt_path=ckpt_path,
         include="module.",
