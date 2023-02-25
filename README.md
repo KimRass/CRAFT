@@ -64,7 +64,7 @@ $$L = \sum_{p} { S_{c}(p) \cdot \big( \lVert S_{r}(p) - S_{r}^{\*}(p) \rVert _{2
 - Comment: Norm
 $$\lVert \textbf{x} \rVert_{p} := \Bigl(\sum \lvert x_{i} \rvert^{p}\Bigr)^{1/p}$$
 - 그런데 사실상 Region score map과 Affinity score map은 2차원이므로 $p$에서 스칼라를 가집니다. 따라서 $L$은 그냥 다음과 같습니다.
-$$L = \sum_{p} { S_{c}(p) \cdot \Bigl\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{2} + \big( S_{a}(p) - S_{a}^{\*}(p) \big) ^{2} \Bigr\} }$$
+$$L = \sum_{p} { S_{c}(p) \cdot \Bigl{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{2} + \big( S_{a}(p) - S_{a}^{\*}(p) \big) ^{2} \Bigr} }$$
 ### Datasets
 - ICDAR2013 (IC13):
   - Consisting of high-resolution images, 229 for training and 233 for testing, containing texts in English. The anno-tations are at word-level using rectangular boxes.
