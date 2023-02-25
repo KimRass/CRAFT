@@ -24,12 +24,8 @@ from train_craft.craft_utilities import (
     load_craft_checkpoint
 )
 
-def train(data_dir):
-    torch.manual_seed(777)
-    cuda = torch.cuda.is_available()
-
+def train(data_dir, batch_size=1, cuda=False):
     n_epochs = 2
-    batch_size = 2
     lr = 1e-4
     weight_decay = 5e-4
     print_every = 4
@@ -83,6 +79,9 @@ def train(data_dir):
                 )
 
 if __name__ == "__main__":
+    torch.manual_seed(777)
+    cuda = torch.cuda.is_available()
+
     args = get_arguments()
 
-    train(args.data_dir)
+    train(data_dir=args.data_dir, batch_size=args.batch_size, cuda=cuda)
