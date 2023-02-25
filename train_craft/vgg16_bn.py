@@ -5,7 +5,7 @@ from torchvision import models
 from torchvision.models.vgg import model_urls
 from packaging import version
 
-from torch_utilities import (
+from train_craft.torch_utilities import (
     initialize_weights
 )
 

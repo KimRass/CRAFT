@@ -1,10 +1,10 @@
 import numpy as np
 from pathlib import Path
 
-from train.craft import (
+from train_craft.craft import (
     CRAFT
 )
-from train.torch_utilities import (
+from train_craft.torch_utilities import (
     _get_state_dict
 )
 

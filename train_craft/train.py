@@ -14,13 +14,13 @@ from utilities import (
 from process_images import (
     load_image
 )
-from train.datasets.ctw.prepare_ctw import (
+from train_craft.datasets.ctw.prepare_ctw import (
     CTWDataset
 )
-from train.loss import (
+from train_craft.loss import (
     ScoreMapLoss
 )
-from train.craft_utilities import (
+from train_craft.craft_utilities import (
     load_craft_checkpoint
 )
 

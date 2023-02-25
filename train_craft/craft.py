@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from train.vgg16_bn import (
+from train_craft.vgg16_bn import (
     vgg16_bn
 )
-from torch_utilities import (
+from train_craft.torch_utilities import (
     initialize_weights
 )
 

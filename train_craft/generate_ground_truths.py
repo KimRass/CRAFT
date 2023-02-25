@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from sympy import Point2D, Line
 
-from process_images import (
+from train_craft.process_images import (
     _convert_to_2d,
     _get_canvas_same_size_as_image,
     _get_width_and_height
