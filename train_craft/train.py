@@ -1,3 +1,4 @@
+import gc
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
@@ -52,8 +53,8 @@ def train(data_dir, batch_size=1, cuda=False):
             optimizer.zero_grad()
 
             out, _ = craft(img)
-            pred_region = out[..., 0].unsqueeze(1)
-            pred_affinity = out[..., 1].unsqueeze(1)
+            pred_region = out[..., 0].detach.unsqueeze(1)
+            pred_affinity = out[..., 1].detach.unsqueeze(1)
 
             loss = criterion(
                 gt_region=gt_region,
@@ -68,7 +69,7 @@ def train(data_dir, batch_size=1, cuda=False):
             running_loss += loss.item()
 
             if step % print_every == 0:
-                print(f"|Epoch: {epoch} | Step: {step} | Total loss during the last {print_every} steps: {running_loss} |")
+                print(f"| Epoch: {epoch} | Step: {step} | Total loss during the last {print_every} steps: {running_loss} |")
 
                 running_loss = 0
 
@@ -84,4 +85,6 @@ if __name__ == "__main__":
 
     args = get_arguments()
 
+    gc.collect()
+    torch.cuda.empty_cache()
     train(data_dir=args.data_dir, batch_size=args.batch_size, cuda=cuda)
