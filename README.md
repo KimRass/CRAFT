@@ -56,6 +56,8 @@ CRAFT-pytorch
   - Comment: 논문에는 Triangle center가 정확히 무엇을 의미하는지 나와 있지 않습니다. Triangle center에는 Centroid (무게중심), Incenter (내심), Circumcenter (외심), Orthocenter (수심) 등이 있는데, 아마 Centroid를 사용하는 것으로 보입니다. [NENET: An Edge Learnable Network for Link Prediction in Scene Text](https://arxiv.org/pdf/2005.12147.pdf)에서도 Centroid를 사용한다고 설명합니다.
 ### Loss
 $$L = \sum_{p} { S_{c}(p) \cdot \big( \lVert S_{r}(p) - S_{r}^{*}(p) \rVert _{2}^{2} + \lVert S_{a}(p) - S_{a}^{*}(p) \rVert _{2}^{2} \big) }$$
+$$L = \sum_{p} { S_{c}(p) \cdot }$$
+$$\big( \lVert S_{r}(p) - S_{r}^{*}(p) \rVert _{2}^{2} + \lVert S_{a}(p) - S_{a}^{*}(p) \rVert _{2}^{2} \big)$$
 - $S_{c}(p)$: Confidence score at pixel $p$ (When training with synthetic data, we can obtain the real ground truth, so $S_{c}(p) = 1$)
 - $S_{r}^{*}(p)$: (Pseudo) Ground-truth region score at pixel $p$
 - $S_{r}(p)$: Predicted region score at pixel $p$
