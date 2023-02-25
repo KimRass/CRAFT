@@ -72,14 +72,14 @@ def train(data_dir, batch_size=1, cuda=False):
 
                 running_loss = 0
 
-            if step & save_every == 0:
-                torch.save(
-                    craft.state_dict(),
-                    Path(__file__).parent/f"train_logs/test{step}.pth"
-                )
+            if step % save_every == 0:
+                save_dir = Path(__file__).parent/"train_logs"
+                save_dir.mkdir(parents=True, exist_ok=True)
+                torch.save(obj=craft.state_dict(), f=save_dir/f"test{step}.pth")
 
 if __name__ == "__main__":
     torch.manual_seed(777)
+
     cuda = torch.cuda.is_available()
 
     args = get_arguments()
