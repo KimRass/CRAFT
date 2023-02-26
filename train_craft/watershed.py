@@ -33,7 +33,7 @@ def _get_local_maxima_array(region_score_map):
     return local_max
 
 
-def _perform_watershed(mask, region_score_map):
+def _perform_watershed(region_score_map):
     # region_score_map = pred_region
     local_max_arr = _get_local_maxima_array(region_score_map)
     _, markers = cv2.connectedComponents(image=local_max_arr.astype("uint8"), connectivity=4)
