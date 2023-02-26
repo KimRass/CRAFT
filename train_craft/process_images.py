@@ -200,3 +200,17 @@ def show_image(img1, img2=None, alpha=0.5):
         )
         img_blended = Image.blend(im1=img1, im2=img2, alpha=alpha)
         img_blended.show()
+
+
+def _invert_image(mask):
+    return cv2.bitwise_not(mask)
+
+
+def _get_masked_image(img, mask, invert=False):
+    img = _convert_to_array(img)
+    mask = _convert_to_2d(
+        _convert_to_array(mask)
+    )
+    if invert:
+        mask = _invert_image(mask)
+    return cv2.bitwise_and(src1=img, src2=img, mask=mask.astype("uint8"))

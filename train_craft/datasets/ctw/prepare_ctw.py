@@ -144,3 +144,25 @@ if "__name__" == "__main__":
         #     save_image(img1=img, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_image.jpg")
         #     save_image(img1=region_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_region.png")
         #     save_image(img1=affinity_score_map, path=out_dir/f"{img_path.stem}_{str(idx).zfill(2)}_affinity.png")
+
+# annots = line["annotations"]
+# word
+# for word in annots:
+#     l_w = len(word)
+#     word
+
+#     pts = np.array(
+#         [word[0]["polygon"][0], word[-1]["polygon"][1], word[-1]["polygon"][2], word[0]["polygon"][3]],
+#         dtype="int"
+#     )
+#     cv2.polylines(
+#         img=img,
+#         pts=[pts],
+#         isClosed=True,
+#         color=(255, 0, 0),
+#         thickness=1
+#     )
+#     # for char in word:
+#     #     np.array(char["polygon"])
+
+# show_image(img)
