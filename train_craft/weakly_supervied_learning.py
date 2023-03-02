@@ -174,9 +174,9 @@ if __name__ == "__main__":
                 for word in labels[trg]:
                     region_quads = _get_region_quadlilaterals(img=img, region_score_map=pred_region, polygon=np.array(word["points"]))
                     pseudo_region = get_pseudo_score_map(img=img, quads=region_quads)
-                    show_image(pseudo_region, img)
+                    # show_image(pseudo_region, img)
                     r = np.maximum(r, pseudo_region)
-                    show_image(r, img)
+                    # show_image(r, img)
 
                     affinity_quads = get_affinity_quadlilaterals(region_quads)
                     # affinity_quads = _sort_points_in_quadliateral(affinity_quads)
