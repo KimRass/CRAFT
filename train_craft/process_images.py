@@ -218,8 +218,11 @@ def _get_masked_image(img, mask, invert=False):
 
 def _get_minimum_area_bounding_rotated_rectangle(mask):
     contours, _ = cv2.findContours(image=mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
+    # len(contours)
     rect = cv2.minAreaRect(contours[0])
     rect = cv2.boxPoints(rect)
+    rect
+    rect.astype("int64")
     return rect.astype("int64")
 
 
