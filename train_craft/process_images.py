@@ -214,3 +214,20 @@ def _get_masked_image(img, mask, invert=False):
     if invert:
         mask = _invert_image(mask)
     return cv2.bitwise_and(src1=img, src2=img, mask=mask.astype("uint8"))
+
+
+def _get_minimum_area_bounding_rotated_rectangle(mask):
+    contours, _ = cv2.findContours(image=mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
+    rect = cv2.minAreaRect(contours[0])
+    rect = cv2.boxPoints(rect)
+    return rect.astype("int64")
+
+
+def convert_to_polygon_to_mask(img, poly):
+    poly_mask = _get_canvas_same_size_as_image(_convert_to_2d(img), black=True)
+    cv2.fillPoly(
+        img=poly_mask,
+        pts=[poly],
+        color=(255, 255, 255),
+    )
+    return poly_mask

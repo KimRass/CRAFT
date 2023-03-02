@@ -3,14 +3,14 @@ import numpy as np
 import cv2
 import torch
 
-from process_images import (
+from train_craft.process_images import (
     _get_canvas_same_size_as_image,
     _get_masked_image
 )
-from watershed import (
+from train_craft.watershed import (
     _perform_watershed
 )
-from weakly_supervied_learning import (
+from train_craft.weakly_supervied_learning import (
     get_confidence_score
 )
 
@@ -19,7 +19,7 @@ label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
 with open(label_path, mode="r") as f:
     labels = json.load(f)
     for trg in labels.keys():
-        trg = "gt_0"
+        trg = "gt_6"
         img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
         img = load_image(img_path)
 
@@ -45,14 +45,28 @@ with open(label_path, mode="r") as f:
                 conf_score_map[word_mask == 255] = int(conf_score * 255)
                 print(gt_length, pred_length)
                 print(conf_score)
-# show_image(word_mask)
-show_image(conf_score_map)
-show_image(pred_region_watershed, img)
-# cv2.polylines(
-#     img=img,
-#     # `"int64"`
-#     pts=[points],
-#     isClosed=True,
-#     color=(255, 0, 0),
-#     thickness=1
-# )
+
+
+label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
+with open(label_path, mode="r") as f:
+    labels = json.load(f)
+    for trg in labels.keys():
+        trg = "gt_6"
+        img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
+        img = load_image(img_path)
+
+        label = labels[trg]
+        for word in label:
+            gt_length = len(word["transcription"])
+            if gt_length > 0:
+                points = np.array(word["points"], dtype="int64")
+                cv2.polylines(
+                    img=img,
+                    pts=[points],
+                    isClosed=True,
+                    color=(255, 0, 0),
+                    thickness=1
+                )
+                for center in points:
+                    cv2.circle(img, center, radius=2, color=(0, 255, 0), thickness=2)
+show_image(img)

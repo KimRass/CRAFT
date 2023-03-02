@@ -40,7 +40,7 @@ def parse_jsonl_file(img_path, jsonl_path):
 def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, crop=False, px_thresh=100_000, dilate=2):
     img, line = parse_jsonl_file(img_path=img_path, jsonl_path=jsonl_path)
 
-    gaussian_map = _get_2d_isotropic_gaussian_map(width=size, height=size, sigma=sigma)
+    gaussian_map = _get_2d_isotropic_gaussian_map(w=size, h=size, sigma=sigma)
     region_score_map = get_region_score_map(img=img, annots=line["annotations"], gaussian_map=gaussian_map)
     affinity_score_map = get_affinity_score_map(img=img, annots=line["annotations"], gaussian_map=gaussian_map)
     if not crop:
@@ -52,9 +52,9 @@ def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, cro
         )
         dilated_region_mask = _get_canvas_same_size_as_image(img=region_mask, black=True)
         for k in range(1, n_labels):
-            width = stats[k, cv2.CC_STAT_WIDTH]
-            height = stats[k, cv2.CC_STAT_HEIGHT]
-            smaller = min(width, height)
+            w = stats[k, cv2.CC_STAT_WIDTH]
+            h = stats[k, cv2.CC_STAT_HEIGHT]
+            smaller = min(w, h)
 
             dilated_label = _dilate_mask(mask=(segmentation_map == k), kernel_shape=(smaller, smaller), iterations=dilate)
             dilated_region_mask = np.maximum(dilated_region_mask, dilated_label)
@@ -62,16 +62,16 @@ def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, cro
 
         _, _, stats, _ = cv2.connectedComponentsWithStats(image=_convert_to_2d(dilated_region_mask), connectivity=4)
         data = defaultdict(list)
-        for xmin, ymin, width, height, pixel_count in stats[1:]:
+        for xmin, ymin, w, h, pixel_count in stats[1:]:
             if pixel_count >= px_thresh:
                 img_patch = _get_image_cropped_by_bboxes(
-                    img=img, xmin=xmin, ymin=ymin, xmax=xmin + width, ymax=ymin + height
+                    img=img, xmin=xmin, ymin=ymin, xmax=xmin + w, ymax=ymin + h
                 )
                 region_score_map_patch = _get_image_cropped_by_bboxes(
-                    img=region_score_map, xmin=xmin, ymin=ymin, xmax=xmin + width, ymax=ymin + height
+                    img=region_score_map, xmin=xmin, ymin=ymin, xmax=xmin + w, ymax=ymin + h
                 )
                 affinity_score_map_patch = _get_image_cropped_by_bboxes(
-                    img=affinity_score_map, xmin=xmin, ymin=ymin, xmax=xmin + width, ymax=ymin + height
+                    img=affinity_score_map, xmin=xmin, ymin=ymin, xmax=xmin + w, ymax=ymin + h
                 )
 
                 data["image"].append(img_patch)
