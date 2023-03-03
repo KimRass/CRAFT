@@ -1,11 +1,16 @@
 import numpy as np
+import math
 import cv2
+from copy import deepcopy
 from sympy import Point2D, Line
+from itertools import combinations
+from itertools import product
 
 from train_craft.process_images import (
     _convert_to_2d,
     _get_canvas_same_size_as_image,
-    _get_width_and_height
+    _get_width_and_height,
+    _sort_quadlilaterals
 )
 
 
@@ -22,28 +27,6 @@ def _get_2d_isotropic_gaussian_map(w=200, h=200, sigma=0.5):
     gaussian_map *= 255
     gaussian_map = gaussian_map.astype("uint8")
     return gaussian_map
-
-
-# def generate_score_map(img, annots, gaussian_map, margin=0.3):
-#     gw, gh = _get_width_and_height(gaussian_map)
-#     left = gw * margin
-#     top = gh * margin
-#     right = gw * (1 - margin)
-#     bottom = gh * (1 - margin)
-#     pts1 = np.array(
-#         [[left, top], [right, top], [right, bottom], [left, bottom]], dtype="float32"
-#     )
-
-#     img_w, img_h = _get_width_and_height(img)
-#     region_score_map = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
-#     for word in annots:
-#         for char in word:
-#             pts2 = np.array(char["polygon"], dtype="float32")
-#             M = cv2.getPerspectiveTransform(src=pts1, dst=pts2)
-#             output = cv2.warpPerspective(src=gaussian_map, M=M, dsize=(img_w, img_h))
-
-#             region_score_map = np.maximum(region_score_map, output)
-#     return region_score_map
 
 
 def generate_score_map(img, quad, gaussian_map, margin=0.3):
@@ -80,6 +63,7 @@ def generate_score_map(img, quad, gaussian_map, margin=0.3):
 
 
 def _get_intersection_of_quarliateral(quad):
+    # quad=quad1
     p11, p21, p12, p22 = quad
     line1 = Line(
         Point2D(list(map(int, p11))), Point2D(list(map(int, p12)))
@@ -125,7 +109,9 @@ def generate_affinity_score_map(img, annots, gaussian_map, margin=0.3):
 
 
 def get_affinity_quadlilateral(quad1, quad2):
-    quad1
+    # quad1=quads[-1]
+    # quad2=quads[-2]
+    # quad1
     inter1 = _get_intersection_of_quarliateral(quad1)
     inter2 = _get_intersection_of_quarliateral(quad2)
 
@@ -143,22 +129,30 @@ def get_affinity_quadlilateral(quad1, quad2):
     return affinity_quad
 
 
+
 def get_affinity_quadlilaterals(quads):
-    affinity_quads = [get_affinity_quadlilateral(quad1, quad2) for quad1, quad2 in zip(quads, quads[1:])]
     # quads = region_quads
-    for quad1, quad2 in zip(quads, quads[1:]):
-        quad1
-        quad2
-        get_affinity_quadlilateral(quad1, quad2)
+    if quads:
+        quads = _sort_quadlilaterals(quads)
+
+        affinity_quads = list()
+        for quad1, quad2 in zip(quads, quads[1:]):
+            try:
+                cv2.polylines(
+                    img=img,
+                    pts=[get_affinity_quadlilateral(quad1, quad2)],
+                    isClosed=True,
+                    color=(255, 0, 0),
+                    thickness=1
+                )
+                show_image(img)
+                # affinity_quads.append(
+                #     get_affinity_quadlilateral(quad1, quad2)
+                # )
+            except Exception:
+                continue
+    else:
+        affinity_quads = list()
     return affinity_quads
 
 
-
-cv2.polylines(
-    img=img,
-    pts=[quad.astype("int64")],
-    isClosed=True,
-    color=(255, 0, 0),
-    thickness=1
-)
-show_image(img)

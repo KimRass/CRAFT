@@ -4,6 +4,8 @@ from PIL import Image
 from itertools import product
 from pathlib import Path
 import requests
+import math
+from copy import deepcopy
 
 
 def _convert_to_2d(img):
@@ -218,15 +220,13 @@ def _get_masked_image(img, mask, invert=False):
 
 def _get_minimum_area_bounding_rotated_rectangle(mask):
     contours, _ = cv2.findContours(image=mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
-    # len(contours)
-    rect = cv2.minAreaRect(contours[0])
-    rect = cv2.boxPoints(rect)
-    rect
-    rect.astype("int64")
-    return rect.astype("int64")
+    rrect = cv2.minAreaRect(contours[0])
+    quad = cv2.boxPoints(rrect)
+    quad = sort_points_in_quadlilateral(quad)
+    return quad
 
 
-def convert_to_polygon_to_mask(img, poly):
+def convert_polygon_to_mask(img, poly):
     poly_mask = _get_canvas_same_size_as_image(_convert_to_2d(img), black=True)
     cv2.fillPoly(
         img=poly_mask,
@@ -234,3 +234,117 @@ def convert_to_polygon_to_mask(img, poly):
         color=(255, 255, 255),
     )
     return poly_mask
+
+
+def draw_polygons(img, polys):
+    copied_img = img.copy()
+    for poly in polys:
+        poly = poly.astype("int64")
+        cv2.polylines(
+            img=copied_img,
+            pts=[poly],
+            isClosed=True,
+            color=(255, 0, 0),
+            thickness=1
+        )
+        for point in poly:
+            cv2.circle(img=copied_img, center=point, radius=2, color=(0, 255, 0), thickness=-1)
+    return copied_img
+
+
+def distance(p1, p2):
+    return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
+
+
+def _sort_points(points):
+    min_tot_dist = math.inf
+    for idx, cur_point in enumerate(deepcopy(points)):
+        copied_points = deepcopy(points)
+        visited = [idx]
+        copied_points.remove(cur_point)
+        tot_dist = 0
+        # Find the nearest unvisited point and add it to the visited list
+        while len(copied_points) > 0:
+            nearest_point, dist = sorted(
+                [(p, distance(cur_point, p)) for p in copied_points],
+                key=lambda x: x[1]
+            )[0]
+            tot_dist += dist
+            visited.append(points.index(nearest_point))
+            copied_points.remove(nearest_point)
+            cur_point = nearest_point
+        
+        if tot_dist < min_tot_dist:
+            min_tot_dist = tot_dist
+            selected_visited = visited
+    return tuple(selected_visited)
+
+
+def _sort_quadlilaterals(quads):
+    centroids = [list(quad.mean(axis=0)) for quad in quads]
+    order = _sort_points(centroids)
+    return [quads[idx] for idx in order]
+
+
+def sort_points_in_quadlilateral(quad):
+    cx, cy = quad.mean(0)
+    x, y = quad.T
+    angles = np.arctan2(x - cx, y - cy) * 180 / math.pi + 90
+    angles = np.where(angles >= 0, angles, 360 + angles)
+    indices = np.argsort(-angles)
+    return quad[indices]
+
+
+# def straighten_curved_text(img, poly):
+#     # for word in label:
+#     #     gt_length = len(word["transcription"])
+#     #     if gt_length > 0:
+#     n_points = len(poly)
+
+#     prev_w = 0
+#     prev_h = 0
+#     max_h = 0
+#     canvas = np.zeros(shape=(500, 300, 3), dtype="uint8")
+#     for idx in range(n_points // 2 - 1):
+#         pts11 = poly[idx]
+#         pts12 = poly[idx + 1]
+#         pts13 = poly[n_points - 2 - idx]
+#         pts14 = poly[n_points - 1 - idx]
+
+#         pts1 = np.stack([pts11, pts12, pts13, pts14]).astype("float32")
+#         # w = int((np.linalg.norm(pts11 - pts12) + np.linalg.norm(pts14 - pts13)) / 2)
+#         # h = int((np.linalg.norm(pts12 - pts13) + np.linalg.norm(pts14 - pts11)) / 2)
+#         w = max(np.linalg.norm(pts11 - pts12), np.linalg.norm(pts14 - pts13))
+#         h = max(np.linalg.norm(pts12 - pts13), np.linalg.norm(pts14 - pts11))
+
+#         # pts2 = np.array([[0, 77 - h], [w, 77 - h], [w, 77], [0, 77]], dtype="float32")
+#         pts2 = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype="float32")
+#         M = cv2.getPerspectiveTransform(src=pts1, dst=pts2)
+
+#         output = cv2.warpPerspective(src=img, M=M, dsize=(int(w), int(h)))
+#         # show_image(output)
+#         # output = cv2.warpPerspective(src=img, M=M, dsize=(w, 77))
+#         # show_image(output)
+#         canvas[0: h, prev_w: prev_w + w, :] = output
+#         # canvas[prev_h // 2 - h // 2: prev_h // 2 - h // 2 + h, prev_w: prev_w + w, :] = output
+
+#         prev_w += w
+#         prev_h += h
+#     # show_image(canvas)
+#     return canvas
+label = labels[trg]
+word = label[2]
+points = np.array(word["points"], dtype="float32")
+
+temp = straighten_curved_text(img, points)
+show_image(temp)
+
+
+if __name__ == "__main__":
+    polys = [
+        np.array(word["points"], dtype="int64") for word in label
+    ]
+    # dr = draw_polygons(img=img, polys=polys)
+    
+    dr = draw_polygons(img=dr, polys=affinity_quads)
+    show_image(dr)
