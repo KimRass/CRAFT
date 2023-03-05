@@ -27,7 +27,6 @@ from train_craft.generate_ground_truths import (
 )
 
 
-
 def get_confidence_score(gt_length, pred_length):
     conf_score = (
         gt_length - min(gt_length, abs(gt_length - pred_length))
@@ -35,11 +34,11 @@ def get_confidence_score(gt_length, pred_length):
     return conf_score
 
 
-def _get_largest_overlapping_mask(mask1, masks):
+def _get_largest_overlapping_mask(trg_mask, masks):
     maxim = 0
-    largest_mask = _get_canvas_same_size_as_image(mask1, black=True)
-    for mask2 in masks:
-        overlap_mask = _get_masked_image(img=mask1, mask=mask2)
+    largest_mask = _get_canvas_same_size_as_image(trg_mask, black=True)
+    for mask in masks:
+        overlap_mask = _get_masked_image(img=trg_mask, mask=mask)
         summ = overlap_mask.sum()
         if summ > maxim:
             maxim = summ
@@ -47,28 +46,31 @@ def _get_largest_overlapping_mask(mask1, masks):
     return largest_mask
 
 
-def _get_region_quadlilaterals(img, region_score_map, labels[trg]):
-    poly_masks = list()
-    for word in labels[trg]:
-        poly=np.array(word["points"])
-        polygon_mask = convert_polygon_to_mask(img=img, poly=poly)
-        # show_image(polygon_mask, img)
-        poly_masks.append(polygon_mask)
-    # len(poly_masks)
+def _get_region_quadlilaterals(img, region_score_map, polys):
+    # polys = [np.array(word["points"]) for word in labels[trg]]
+    
 
+    # region_score_map = pred_region
     # temp = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
-    region_segmentation_map = _perform_watershed(region_score_map, score_thresh=5)
+    # show_image(region_segmentation_map, img)
+    poly_masks = [convert_polygon_to_mask(img=img, poly=poly) for poly in polys]
+    
+    region_segmentation_map = _perform_watershed(region_score_map, score_thresh=30)
     region_quads = list()
-    for idx in np.unique(region_segmentation_map):
-        if idx == 0:
+    for label in np.unique(region_segmentation_map):
+        if label == 0:
             continue
 
-        pred_region_mask = (region_segmentation_map == idx).astype("uint8") * 255
-        mask = _get_largest_overlapping_mask(mask1=pred_region_mask, masks=poly_masks)
-        # mask = _get_masked_image(img=pred_region_mask, mask=polygon_mask)
+        pred_region_mask = (region_segmentation_map == label).astype("uint8") * 255
+        mask = _get_largest_overlapping_mask(trg_mask=pred_region_mask, masks=poly_masks)
         if mask.sum() != 0:
             quad = _get_minimum_area_bounding_rotated_rectangle(mask)
             region_quads.append(quad)
+    # dr = draw_polygons(img, region_quads)
+    # show_image(dr)
+    # dr2 = draw_polygons(img, polys)
+    # show_image(dr2)
+    # show_image(pred_region, img)
     return region_quads
 
 
@@ -91,41 +93,62 @@ def get_pseudo_score_map(img, quads):
     return pseudo_score_map
 
 
+
+
+
+
+
+
+
 if __name__ == "__main__":
     cuda = torch.cuda.is_available()
 
     interim = load_craft_checkpoint(cuda)
 
-    label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
+    # label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
+    label_path = "D:/train_labels.json"
     with open(label_path, mode="r") as f:
         labels = json.load(f)
         for trg in tqdm(list(labels.keys())):
-            trg = "gt_1342"
-            img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
+            trg = "gt_6"
+            # img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
+            img_path = f"D:/train_images/{trg}.jpg"
             img = load_image(img_path)
+            show_image(img)
 
             pred_region, pred_affinity = _infer(img=img, craft=interim, cuda=cuda)
             # show_image(pred_region, img)
 
-            r = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
-            a = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
-            for word in labels[trg]:
-                poly=np.array(word["points"])
-                word = labels[trg][1]
-                region_quads = _get_region_quadlilaterals(
-                    img=img, region_score_map=pred_region, poly=np.array(word["points"])
-                )
-                pseudo_region = get_pseudo_score_map(img=img, quads=region_quads)
-                show_image(pseudo_region, img)
-                r = np.maximum(r, pseudo_region)
+            
+            polys = [np.array(word["points"]) for word in labels[trg]]
+            len(polys)
+            region_quads = _get_region_quadlilaterals(
+                img=img, region_score_map=pred_region, polys=polys
+            )
+            pseudo_region = get_pseudo_score_map(img=img, quads=region_quads)
+            save_image(
+                img1=pseudo_region,
+                img2=img,
+                path=f"D:/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_pseudo_region.png"
+            )
+            
+            # a = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
+            # for word in labels[trg]:
+            #     word
+            #     polys = [np.array(word["points"])]
+            # region_quads = _get_region_quadlilaterals(
+            #     img=img, region_score_map=pred_region, polys=polys
+            # )
+            # len(region_quads)
+            poly_masks = [convert_polygon_to_mask(img=img, poly=poly) for poly in polys]
+            
+            [_get_intersection_of_quarliateral(quad) for quad in region_quads]
 
-                # region_quads
-                affinity_quads = get_affinity_quadlilaterals(region_quads)
-                pseudo_affinity = get_pseudo_score_map(img=img, quads=affinity_quads)
-                show_image(pseudo_affinity, img)
-                a = np.maximum(a, pseudo_affinity)
+            affinity_quads = get_affinity_quadlilaterals(region_quads)
+            pseudo_affinity = get_pseudo_score_map(img=img, quads=affinity_quads)
+            show_image(pseudo_affinity, img)
+            # a = np.maximum(a, pseudo_affinity)
             # show_image(r, img)
 
-            save_image(img1=r, img2=img, path=f"/Users/jongbeomkim/Downloads/score_maps/{trg}_pseudo_region.png")
             save_image(img1=a, img2=img, path=f"/Users/jongbeomkim/Downloads/score_maps/{trg}_pseudo_afiinity.png")
 

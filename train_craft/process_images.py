@@ -220,10 +220,14 @@ def _get_masked_image(img, mask, invert=False):
 
 def _get_minimum_area_bounding_rotated_rectangle(mask):
     contours, _ = cv2.findContours(image=mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
+    # for cnt in contours:
+    #     cv2.drawContours(warped_img, [cnt], 0, (255, 0, 0), 1)
+    # show_image(warped_img)
     rrect = cv2.minAreaRect(contours[0])
-    quad = cv2.boxPoints(rrect)
-    quad = sort_points_in_quadlilateral(quad)
-    return quad
+    rrect = cv2.boxPoints(rrect)
+    rrect = sort_points_in_quadlilateral(rrect)
+    rrect = rrect.astype("int64")
+    return rrect
 
 
 def convert_polygon_to_mask(img, poly):
@@ -295,45 +299,102 @@ def sort_points_in_quadlilateral(quad):
     return quad[indices]
 
 
-# def straighten_curved_text(img, poly):
-#     # for word in label:
-#     #     gt_length = len(word["transcription"])
-#     #     if gt_length > 0:
-#     n_points = len(poly)
+def _make_segmentation_map_rectangle(segmentation_map):
+    copied_segmentation_map = segmentation_map.copy()
+    for label in range(1, np.max(copied_segmentation_map) + 1):
+        segmentation_map_sub = (copied_segmentation_map == label)
+        nonzero_x = np.where((segmentation_map_sub != 0).any(axis=0))[0]
+        nonzero_y = np.where((segmentation_map_sub != 0).any(axis=1))[0]
+        if nonzero_x.size != 0 and nonzero_y.size != 0:
+            copied_segmentation_map[
+                nonzero_y[0]: nonzero_y[-1] + 1, nonzero_x[0]: nonzero_x[-1] + 1
+            ] = label
+    return copied_segmentation_map
 
-#     prev_w = 0
-#     prev_h = 0
-#     max_h = 0
-#     canvas = np.zeros(shape=(500, 300, 3), dtype="uint8")
-#     for idx in range(n_points // 2 - 1):
-#         pts11 = poly[idx]
-#         pts12 = poly[idx + 1]
-#         pts13 = poly[n_points - 2 - idx]
-#         pts14 = poly[n_points - 1 - idx]
 
-#         pts1 = np.stack([pts11, pts12, pts13, pts14]).astype("float32")
-#         # w = int((np.linalg.norm(pts11 - pts12) + np.linalg.norm(pts14 - pts13)) / 2)
-#         # h = int((np.linalg.norm(pts12 - pts13) + np.linalg.norm(pts14 - pts11)) / 2)
-#         w = max(np.linalg.norm(pts11 - pts12), np.linalg.norm(pts14 - pts13))
-#         h = max(np.linalg.norm(pts12 - pts13), np.linalg.norm(pts14 - pts11))
+def _make_mask_rectangle(mask):
+    copied_mask = mask.copy()
 
-#         # pts2 = np.array([[0, 77 - h], [w, 77 - h], [w, 77], [0, 77]], dtype="float32")
-#         pts2 = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype="float32")
-#         M = cv2.getPerspectiveTransform(src=pts1, dst=pts2)
+    nonzero_x = np.where((copied_mask != 0).any(axis=0))[0]
+    nonzero_y = np.where((copied_mask != 0).any(axis=1))[0]
+    if nonzero_x.size != 0 and nonzero_y.size != 0:
+        copied_mask[
+            nonzero_y[0]: nonzero_y[-1] + 1, nonzero_x[0]: nonzero_x[-1] + 1
+        ] = 255
+    return copied_mask
 
-#         output = cv2.warpPerspective(src=img, M=M, dsize=(int(w), int(h)))
-#         # show_image(output)
-#         # output = cv2.warpPerspective(src=img, M=M, dsize=(w, 77))
-#         # show_image(output)
-#         canvas[0: h, prev_w: prev_w + w, :] = output
-#         # canvas[prev_h // 2 - h // 2: prev_h // 2 - h // 2 + h, prev_w: prev_w + w, :] = output
 
-#         prev_w += w
-#         prev_h += h
-#     # show_image(canvas)
-#     return canvas
-label = labels[trg]
-word = label[2]
+def _get_minimum_area_bounding_rectangle(mask):
+    contours, _ = cv2.findContours(image=mask, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_SIMPLE)
+    x, y, w, h = cv2.boundingRect(contours[0])
+    return x, y, x + w, y + h
+
+
+def perform_perspective_transform(src_quad, dst_quad, src_img, out_resolution):
+    M = cv2.getPerspectiveTransform(src=src_quad, dst=dst_quad)
+    warped_img = cv2.warpPerspective(src=src_img, M=M, dsize=out_resolution)
+    return warped_img
+
+
+def straighten_curved_text(img, poly):
+    words = labels[trg]
+
+    img_w, img_h = _get_width_and_height(img)
+    gaussian_map = _get_2d_isotropic_gaussian_map()
+    xmin, ymin, xmax, ymax = _get_gaussian_map_core_rectangle(gaussian_map=gaussian_map, margin=margin)
+    core_rect = np.array(
+        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32"
+    )
+
+    pseudo_region = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
+    for word in words:
+        word=words[0]
+        poly = np.array(word["points"])
+        n_points = len(poly)
+
+        for idx in range(n_points // 2 - 1):
+            # dr = draw_polygons(img, [poly])
+            # show_image(dr)
+            idx=0
+            point1 = poly[idx]
+            point2 = poly[idx + 1]
+            point3 = poly[n_points - 2 - idx]
+            point4 = poly[n_points - 1 - idx]
+
+            subword_quad = np.array([point1, point2, point3, point4]).astype("float32")
+            dst_w = int(max(np.linalg.norm(point1 - point2), np.linalg.norm(point4 - point3)))
+            dst_h = int(max(np.linalg.norm(point2 - point3), np.linalg.norm(point4 - point1)))
+            dst_quad = np.array([[0, 0], [dst_w, 0], [dst_w, dst_h], [0, dst_h]], dtype="float32")
+            warped_subword = perform_perspective_transform(
+                src_quad=subword_quad, dst_quad=dst_quad, src_img=img, out_resolution=(dst_w, dst_h)
+            )
+            warped_pred_region = perform_perspective_transform(
+                src_quad=subword_quad, dst_quad=dst_quad, src_img=pred_region, out_resolution=(dst_w, dst_h)
+            )
+            # warped_pred_affinity = perform_perspective_transform(
+            #     src_quad=subword_quad, dst_quad=dst_quad, src_img=pred_affinity, out_resolution=(dst_w, dst_h)
+            # )
+
+            watersheded = _perform_watershed(score_map=warped_pred_region, score_thresh=150)
+            # show_image(watersheded)
+            for label in np.unique(watersheded):
+                if label == 0:
+                    continue
+                pred_region_mask = (watersheded == label).astype("uint8") * 255
+                xmin, ymin, xmax, ymax = _get_minimum_area_bounding_rectangle(pred_region_mask)
+                bounding_rect = np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32")
+
+                M1 = cv2.getPerspectiveTransform(src=core_rect, dst=bounding_rect)
+                M2 = cv2.getPerspectiveTransform(src=dst_quad, dst=subword_quad)
+                pseudo_subregion = cv2.warpPerspective(src=gaussian_map, M=np.matmul(M2, M1), dsize=(img_w, img_h))
+                pseudo_region = np.maximum(pseudo_region, pseudo_subregion)
+    show_image(pseudo_region, img)
+    # save_image(img1=pseudo_region, img2=img, path="D:/pseudo_region.jpg")
+
+
+
+    
+
 points = np.array(word["points"], dtype="float32")
 
 temp = straighten_curved_text(img, points)

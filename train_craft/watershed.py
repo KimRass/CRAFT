@@ -33,12 +33,12 @@ def _get_local_maxima_array(region_score_map):
     return local_max
 
 
-def _perform_watershed(region_score_map, score_thresh=30):
-    # region_score_map = pred_region
-    local_max_arr = _get_local_maxima_array(region_score_map)
+def _perform_watershed(score_map, score_thresh=30):
+    # score_map = pred_region
+    local_max_arr = _get_local_maxima_array(score_map)
     _, markers = cv2.connectedComponents(image=local_max_arr.astype("uint8"), connectivity=4)
     _, region_mask = cv2.threshold(
-        src=region_score_map, thresh=score_thresh, maxval=255, type=cv2.THRESH_BINARY
+        src=score_map, thresh=score_thresh, maxval=255, type=cv2.THRESH_BINARY
     )
-    segmentation_map = watershed(image=-region_score_map, markers=markers, mask=_convert_to_2d(region_mask))
+    segmentation_map = watershed(image=-score_map, markers=markers, mask=_convert_to_2d(region_mask))
     return segmentation_map
