@@ -120,7 +120,7 @@ def _dilate_mask(mask, kernel_shape=(3, 3), iterations=1):
     return mask
 
 
-def _get_image_cropped_by_bboxes(img, xmin, ymin, xmax, ymax):
+def _get_image_cropped_by_rectangle(img, xmin, ymin, xmax, ymax):
     if img.ndim == 3:
         return img[ymin: ymax, xmin: xmax, :]
     else:
