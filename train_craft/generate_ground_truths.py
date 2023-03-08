@@ -14,7 +14,7 @@ from train_craft.process_images import (
 )
 
 
-def _get_2d_isotropic_gaussian_map(w=200, h=200, sigma=0.5):
+def _get_2d_isotropic_gaussian_map(w=200, h=200, sigma=0.4):
     x, y = np.meshgrid(
         np.linspace(-1, 1, w), np.linspace(-1, 1, h)
     )
@@ -29,7 +29,7 @@ def _get_2d_isotropic_gaussian_map(w=200, h=200, sigma=0.5):
     return gaussian_map
 
 
-def _get_gaussian_map_core_rectangle(gaussian_map, margin=0.3):
+def _get_gaussian_map_core_rectangle(gaussian_map, margin=0.4):
     w, h = _get_width_and_height(gaussian_map)
     xmin = w * margin
     ymin = h * margin

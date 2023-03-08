@@ -46,17 +46,15 @@ def _get_largest_overlapping_mask(trg_mask, masks):
     return largest_mask
 
 
-def _get_region_quadlilaterals(img, region_score_map, polys):
-    # polys = [np.array(word["points"]) for word in labels[trg]]
-    
-
-    # region_score_map = pred_region
-    # temp = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
-    # show_image(region_segmentation_map, img)
+def _get_region_quadlilaterals(img, region_score_map, polys, score_thresh=50):
+    # region_score_map=pred_region
+    # score_thresh=70
     poly_masks = [convert_polygon_to_mask(img=img, poly=poly) for poly in polys]
     
-    region_segmentation_map = _perform_watershed(region_score_map, score_thresh=30)
+    region_segmentation_map = _perform_watershed(region_score_map, score_thresh=score_thresh)
+    # show_image(region_segmentation_map, img)
     region_quads = list()
+    # max_scores = list()
     for label in np.unique(region_segmentation_map):
         if label == 0:
             continue
@@ -65,34 +63,22 @@ def _get_region_quadlilaterals(img, region_score_map, polys):
         mask = _get_largest_overlapping_mask(trg_mask=pred_region_mask, masks=poly_masks)
         if mask.sum() != 0:
             quad = _get_minimum_area_bounding_rotated_rectangle(mask)
+
+            # max_score = pred_region[region_segmentation_map == label].max()
             region_quads.append(quad)
-    # dr = draw_polygons(img, region_quads)
-    # show_image(dr)
-    # dr2 = draw_polygons(img, polys)
-    # show_image(dr2)
-    # show_image(pred_region, img)
+            # max_scores.append(max_score)
     return region_quads
 
 
-def get_pseudo_score_map(img, quads):
-    # quads=region_quads
+def get_pseudo_score_map(img, quads, margin=0.4):
     gaussian_map = _get_2d_isotropic_gaussian_map()
     pseudo_score_map = _get_canvas_same_size_as_image(
         img=_convert_to_2d(img), black=True
     )
     for quad in quads:
-        # quad=quads[-3]
-        # if len(np.unique(quad[:, 0])) != 4 or len(np.unique(quad[:, 1])) != 4:
-        #     continue
-
-        score_map = generate_score_map(img=img, quad=quad, gaussian_map=gaussian_map)
-        # show_image(score_map)
-
+        score_map = generate_score_map(img=img, poly=quad, gaussian_map=gaussian_map, margin=margin)
         pseudo_score_map = np.maximum(pseudo_score_map, score_map)
-    # show_image(pseudo_score_map, img)
     return pseudo_score_map
-
-
 
 
 if __name__ == "__main__":
@@ -100,31 +86,39 @@ if __name__ == "__main__":
 
     interim = load_craft_checkpoint(cuda)
 
-    label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
-    # label_path = "D:/train_labels.json"
+    # label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
+    label_path = "D:/train_labels.json"
     with open(label_path, mode="r") as f:
         labels = json.load(f)
         for trg in tqdm(list(labels.keys())):
-            trg = "gt_6"
-            img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
-            # img_path = f"D:/train_images/{trg}.jpg"
+            # trg = "gt_1234"
+            # img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
+            img_path = f"D:/train_images/{trg}.jpg"
             img = load_image(img_path)
-            show_image(img)
+            # show_image(img)
 
             pred_region, pred_affinity = _infer(img=img, craft=interim, cuda=cuda)
-            show_image(pred_region, img)
-
             
             polys = [np.array(word["points"]) for word in labels[trg]]
-            len(polys)
             region_quads = _get_region_quadlilaterals(
-                img=img, region_score_map=pred_region, polys=polys
+                # img=img, region_score_map=pred_region, polys=polys, score_thresh=165
+                img=img, region_score_map=pred_region, polys=polys, score_thresh=80
             )
-            pseudo_region = get_pseudo_score_map(img=img, quads=region_quads)
+            # dr = draw_polygons(img, region_quads)
+            # show_image(dr)
+            pseudo_region = get_pseudo_score_map(img=img, quads=region_quads, margin=0.2)
+            # show_image(pseudo_region, img)
+            # show_image(pred_region, img)
+            
             save_image(
                 img1=pseudo_region,
                 img2=img,
-                path=f"D:/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_pseudo_region.png"
+                path=f"D:/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_pseudo_region_score_map.jpg"
+            )
+            save_image(
+                img1=pred_region,
+                img2=img,
+                path=f"D:/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_predicted_region_score_map.jpg"
             )
             
             # a = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
