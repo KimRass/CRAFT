@@ -330,82 +330,136 @@ def _get_minimum_area_bounding_rectangle(mask):
     return x, y, x + w, y + h
 
 
-def perform_perspective_transform(src_quad, dst_quad, src_img, out_resolution):
+def perform_perspective_transform(src_quad, dst_quad, src_img, out_resolution, cut=False):
     M = cv2.getPerspectiveTransform(src=src_quad, dst=dst_quad)
-    warped_img = cv2.warpPerspective(src=src_img, M=M, dsize=out_resolution)
+    if not cut:
+        warped_img = cv2.warpPerspective(src=src_img, M=M, dsize=out_resolution)
+    else:
+        mask = _get_canvas_same_size_as_image(img=src_img, black=True)
+        cv2.fillPoly(
+            img=mask,
+            pts=[src_quad.astype("int32")],
+            color=(255, 255, 255),
+        )
+        masked_src_img = _get_masked_image(img=src_img, mask=mask)
+
+        warped_img = cv2.warpPerspective(src=masked_src_img, M=M, dsize=out_resolution)
     return warped_img
 
 
-def straighten_curved_text(img, poly):
-    words = labels[trg]
+# def straighten_curved_text(img, poly):
+#     words = labels[trg]
 
-    img_w, img_h = _get_width_and_height(img)
-    gaussian_map = _get_2d_isotropic_gaussian_map()
-    xmin, ymin, xmax, ymax = _get_gaussian_map_core_rectangle(gaussian_map=gaussian_map, margin=margin)
-    core_rect = np.array(
-        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32"
-    )
+#     img_w, img_h = _get_width_and_height(img)
+#     gaussian_map = _get_2d_isotropic_gaussian_map()
+#     xmin, ymin, xmax, ymax = _get_gaussian_map_core_rectangle(gaussian_map=gaussian_map, margin=margin)
+#     core_rect = np.array(
+#         [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32"
+#     )
 
-    pseudo_region = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
-    for word in words:
-        word=words[0]
-        poly = np.array(word["points"])
-        n_points = len(poly)
+#     pseudo_region = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)
+#     for word in words:
+#         word=words[0]
+#         poly = np.array(word["points"])
+#         n_points = len(poly)
 
-        for idx in range(n_points // 2 - 1):
-            # dr = draw_polygons(img, [poly])
-            # show_image(dr)
-            idx=0
-            point1 = poly[idx]
-            point2 = poly[idx + 1]
-            point3 = poly[n_points - 2 - idx]
-            point4 = poly[n_points - 1 - idx]
+#         ls = list()
+#         dst_quad = np.array([[0, 0], [100, 0], [100, 100], [0, 100]], dtype="float32")
+#         for idx in range(n_points // 2 - 1):
+#             # dr = draw_polygons(img, [poly])
+#             # show_image(dr)
+#             # idx=0
+#             point1 = poly[idx]
+#             point2 = poly[idx + 1]
+#             point3 = poly[n_points - 2 - idx]
+#             point4 = poly[n_points - 1 - idx]
 
-            subword_quad = np.array([point1, point2, point3, point4]).astype("float32")
-            dst_w = int(max(np.linalg.norm(point1 - point2), np.linalg.norm(point4 - point3)))
-            dst_h = int(max(np.linalg.norm(point2 - point3), np.linalg.norm(point4 - point1)))
-            dst_quad = np.array([[0, 0], [dst_w, 0], [dst_w, dst_h], [0, dst_h]], dtype="float32")
-            warped_subword = perform_perspective_transform(
-                src_quad=subword_quad, dst_quad=dst_quad, src_img=img, out_resolution=(dst_w, dst_h)
-            )
-            warped_pred_region = perform_perspective_transform(
-                src_quad=subword_quad, dst_quad=dst_quad, src_img=pred_region, out_resolution=(dst_w, dst_h)
-            )
-            # warped_pred_affinity = perform_perspective_transform(
-            #     src_quad=subword_quad, dst_quad=dst_quad, src_img=pred_affinity, out_resolution=(dst_w, dst_h)
-            # )
+#             subword_quad = np.array([point1, point2, point3, point4]).astype("float32")
+#             # dst_w = int(max(np.linalg.norm(point1 - point2), np.linalg.norm(point4 - point3)))
+#             # dst_h = int(max(np.linalg.norm(point2 - point3), np.linalg.norm(point4 - point1)))
+#             # dst_quad = np.array([[0, 0], [dst_w, 0], [dst_w, dst_h], [0, dst_h]], dtype="float32")
+#             # dst_quad = np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32")
 
-            watersheded = _perform_watershed(score_map=warped_pred_region, score_thresh=150)
-            # show_image(watersheded)
-            for label in np.unique(watersheded):
-                if label == 0:
-                    continue
-                pred_region_mask = (watersheded == label).astype("uint8") * 255
-                xmin, ymin, xmax, ymax = _get_minimum_area_bounding_rectangle(pred_region_mask)
-                bounding_rect = np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32")
+#             ls.append(subword_quad)
+#             # xmin += 100
+#             # xmax += 100
 
-                M1 = cv2.getPerspectiveTransform(src=core_rect, dst=bounding_rect)
-                M2 = cv2.getPerspectiveTransform(src=dst_quad, dst=subword_quad)
-                pseudo_subregion = cv2.warpPerspective(src=gaussian_map, M=np.matmul(M2, M1), dsize=(img_w, img_h))
-                pseudo_region = np.maximum(pseudo_region, pseudo_subregion)
-    show_image(pseudo_region, img)
+#         ls_warped_pred_region = list()
+#         for subword_quad in ls:
+#             # warped_subword = perform_perspective_transform(
+#             #     src_quad=subword_quad, dst_quad=dst_quad, src_img=img, out_resolution=(dst_w, dst_h)
+#             # )
+#             # dr = draw_polygons(img, [subword_quad])
+#             # show_image(dr)
+#             warped_pred_region = perform_perspective_transform(
+#                 src_quad=subword_quad, dst_quad=dst_quad, src_img=pred_region, out_resolution=(100, 100)
+#             )
+#             # show_image(warped_pred_region)
+#             ls_warped_pred_region.append(warped_pred_region)
+#         warped_pred_region = np.concatenate(ls_warped_pred_region, axis=1)
+#         show_image(warped_pred_region)
+
+#         # show_image(warped_pred_region)
+#             # ls_warped_pred_region.append(warped_subword)
+#         # dr = draw_polygons(img, polys)
+#         # show_image(dr)
+#         # show_image(np.concatenate(ls_warped_pred_region, axis=1))
+#         # show_image(pred_region, img)
+#             # warped_pred_affinity = perform_perspective_transform(
+#             #     src_quad=subword_quad, dst_quad=dst_quad, src_img=pred_affinity, out_resolution=(dst_w, dst_h)
+#             # )
+
+#         watersheded = _perform_watershed(score_map=warped_pred_region, score_thresh=150)
+#         # show_image(watersheded)
+#             # show_image(watersheded)
+#         canvas2 = _get_canvas_same_size_as_image(pred_region, black=True)
+#         for label in np.unique(watersheded):
+#             if label == 0:
+#                 continue
+#             pred_region_mask = (watersheded == label).astype("uint8") * 255
+#             # show_image(pred_region_mask)
+#             xmin, ymin, xmax, ymax = _get_minimum_area_bounding_rectangle(pred_region_mask)
+#             canvas = np.zeros_like(watersheded, dtype="uint8")
+#             canvas[ymin: ymax, xmin: xmax] = label
+#             show_image(canvas.astype("int32"))
+
+#             for idx, subword_quad in enumerate(ls):
+#                 quad = np.array([[idx * 100, 0], [(idx + 1) * 100, 0], [(idx + 1) * 100, 100], [idx * 100, 100]], dtype="float32")
+#                 # quad
+#                 temp = perform_perspective_transform(
+#                     src_quad=quad, dst_quad=subword_quad, src_img=canvas, out_resolution=(img_w, img_h), cut=True
+#                 )
+#                 # show_image(temp.astype("int32"))
+#                 canvas2 = np.maximum(canvas2, temp)
+#         show_image(canvas2.astype("int32"))
+#             # show_image(canvas)
+
+
+#             bounding_rect = np.array([[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32")
+#             bounding_rect
+
+#             M1 = cv2.getPerspectiveTransform(src=core_rect, dst=bounding_rect)
+#             M2 = cv2.getPerspectiveTransform(src=dst_quad, dst=subword_quad)
+#             pseudo_subregion = cv2.warpPerspective(src=gaussian_map, M=np.matmul(M2, M1), dsize=(img_w, img_h))
+#             pseudo_region = np.maximum(pseudo_region, pseudo_subregion)
+#     show_image(pseudo_region, img)
     # save_image(img1=pseudo_region, img2=img, path="D:/pseudo_region.jpg")
 
 
 
     
 
-points = np.array(word["points"], dtype="float32")
+# points = np.array(word["points"], dtype="float32")
 
-temp = straighten_curved_text(img, points)
-show_image(temp)
+# temp = straighten_curved_text(img, points)
+# show_image(temp)
 
 
-if __name__ == "__main__":
-    polys = [
-        np.array(word["points"], dtype="int64") for word in label
-    ]
-    # dr = draw_polygons(img=img, polys=polys)
+# if __name__ == "__main__":
+#     polys = [
+#         np.array(word["points"], dtype="int64") for word in label
+#     ]
+#     # dr = draw_polygons(img=img, polys=polys)
     
-    dr = draw_polygons(img=dr, polys=affinity_quads)
-    show_image(dr)
+#     dr = draw_polygons(img=dr, polys=affinity_quads)
+#     show_image(dr)

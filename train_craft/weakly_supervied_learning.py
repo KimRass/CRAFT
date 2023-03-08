@@ -95,29 +95,24 @@ def get_pseudo_score_map(img, quads):
 
 
 
-
-
-
-
-
 if __name__ == "__main__":
     cuda = torch.cuda.is_available()
 
     interim = load_craft_checkpoint(cuda)
 
-    # label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
-    label_path = "D:/train_labels.json"
+    label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
+    # label_path = "D:/train_labels.json"
     with open(label_path, mode="r") as f:
         labels = json.load(f)
         for trg in tqdm(list(labels.keys())):
             trg = "gt_6"
-            # img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
-            img_path = f"D:/train_images/{trg}.jpg"
+            img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
+            # img_path = f"D:/train_images/{trg}.jpg"
             img = load_image(img_path)
             show_image(img)
 
             pred_region, pred_affinity = _infer(img=img, craft=interim, cuda=cuda)
-            # show_image(pred_region, img)
+            show_image(pred_region, img)
 
             
             polys = [np.array(word["points"]) for word in labels[trg]]
