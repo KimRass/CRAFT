@@ -109,6 +109,8 @@ $$L = \sum_{p} { S_{c}(p) \cdot \Bigl\\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{
 - *The input of the LinkRefiner is a concatenation of the region score, the affinity score, and the intermediate feature map of CRAFT, and the output is a refined affinity score adjusted for long texts. To combine characters, the refined affinity score is used instead of the original affinity score*, then the polygon generation is performed in the same way as it was performed for TotalText.
 - **Only LinkRefiner is trained on the CTW-1500 dataset while freezing CRAFT.** The detailed implementation of LinkRefiner is addressed in the supplementary materials.
 - Atrous Spatial Pyramid Pooling (ASPP) in is adopted to ensure a large receptive field for combining distant characters and words onto the same text line.
+## References
+- [6] [Synthetic Data for Text Localisation in Natural Images](https://arxiv.org/pdf/1604.06646.pdf)
 
 # Region Score Map Difference by Text Colors
 - Region score map from original image | Region score map from inverted image
