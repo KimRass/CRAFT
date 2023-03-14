@@ -86,14 +86,14 @@ if __name__ == "__main__":
 
     interim = load_craft_checkpoint(cuda)
 
-    # label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
-    label_path = "D:/train_labels.json"
+    label_path = "/Users/jongbeomkim/Downloads/train_labels.json"
+    # label_path = "D:/train_labels.json"
     with open(label_path, mode="r") as f:
         labels = json.load(f)
         for trg in tqdm(list(labels.keys())):
-            # trg = "gt_1234"
-            # img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
-            img_path = f"D:/train_images/{trg}.jpg"
+            # trg = "gt_1871"
+            img_path = f"/Users/jongbeomkim/Downloads/train_images/{trg}.jpg"
+            # img_path = f"D:/train_images/{trg}.jpg"
             img = load_image(img_path)
             # show_image(img)
 
@@ -113,12 +113,12 @@ if __name__ == "__main__":
             save_image(
                 img1=pseudo_region,
                 img2=img,
-                path=f"D:/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_pseudo_region_score_map.jpg"
+                path=f"/Users/jongbeomkim/Desktop/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_pseudo_region_score_map.jpg"
             )
             save_image(
                 img1=pred_region,
                 img2=img,
-                path=f"D:/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_predicted_region_score_map.jpg"
+                path=f"/Users/jongbeomkim/Desktop/workspace/craft/train_craft/datasets/icdar2019/sample_pseudo_score_maps/{trg}_predicted_region_score_map.jpg"
             )
             
             # a = _get_canvas_same_size_as_image(img=_convert_to_2d(img), black=True)

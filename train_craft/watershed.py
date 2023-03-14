@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.sparse import coo_matrix
 import cv2
-# from skimage.feature import peak_local_max
+from skimage.feature import peak_local_max
 from skimage.morphology import local_maxima
 from skimage.segmentation import watershed
 
@@ -10,16 +10,22 @@ from process_images import (
     _convert_to_2d
 )
 
+
 def _perform_watershed(score_map, score_thresh=50):
-    _, region_mask = cv2.threshold(
-        src=score_map, thresh=score_thresh, maxval=255, type=cv2.THRESH_BINARY
-    )
-    markers = local_maxima(image=score_map)
-    _, markers = cv2.connectedComponents(image=markers.astype("uint8"), connectivity=4)
-    # show_image(markers, img, 0.2)
+    # score_map = pred_region.copy()
+    trimmed_score_map = score_map.copy()
+    trimmed_score_map[trimmed_score_map < 190] = 0
+
+    markers = local_maxima(image=trimmed_score_map)
+    _, markers = cv2.connectedComponents(image=markers.astype("int8"), connectivity=8)
+
+    _, region_mask = cv2.threshold(src=score_map, thresh=score_thresh, maxval=255, type=cv2.THRESH_BINARY)
     watersheded = watershed(image=-score_map, markers=markers, mask=_convert_to_2d(region_mask))
-    # show_image(watershed, img)
+    # show_image(watersheded, img)
     return watersheded
+# temp = _perform_watershed(pred_region)
+# show_image(temp)
+
 
 
 # def _get_local_maxima_coordinates(region_score_map):
