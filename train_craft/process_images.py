@@ -136,6 +136,10 @@ def _downsample_image(img):
     return cv2.pyrDown(img)
 
 
+def _upsample_image(img):
+    return cv2.pyrUp(img)
+
+
 def load_image(url_or_path="", gray=False):
     url_or_path = str(url_or_path)
 

@@ -13,6 +13,7 @@ from process_images import (
 
 def _perform_watershed(score_map, score_thresh=50):
     # score_map = pred_region.copy()
+    # score_map = region_score_map.copy()
     trimmed_score_map = score_map.copy()
     trimmed_score_map[trimmed_score_map < 190] = 0
 
@@ -23,9 +24,11 @@ def _perform_watershed(score_map, score_thresh=50):
     watersheded = watershed(image=-score_map, markers=markers, mask=_convert_to_2d(region_mask))
     # show_image(watersheded, img)
     return watersheded
-# temp = _perform_watershed(pred_region)
-# show_image(temp)
-
+temp = _perform_watershed(region_score_map, score_thresh=80)
+show_image(temp, d1, 0.1)
+temp2 = _get_region_segmentation_map(region_score_map, region_thresh=80)
+show_image(temp2, d1, 0.1)
+# show_image(region_score_map)
 
 
 # def _get_local_maxima_coordinates(region_score_map):
