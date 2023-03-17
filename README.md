@@ -43,7 +43,7 @@ CRAFT-pytorch
 ### Weakly-supervised Learning
 - Weakly-supervised training requires two types of data; quadrilateral annotations for cropping word images and transcriptions for calculating word length. The datasets meeting these conditions are IC13, IC15, and IC17. Other datasets such as MSRA-TD500, TotalText, and CTW-1500 do not meet the requirements.
 - Fig. 4
-  - <img src="https://user-images.githubusercontent.com/67457712/225799234-4e8045da-c272-43d8-bd24-90bff1acb58d.png" width="600">
+  - <img src="https://user-images.githubusercontent.com/67457712/225799234-4e8045da-c272-43d8-bd24-90bff1acb58d.png" width="700">
 - Unlike synthetic datasets, real images in a dataset usually have word-level annotations. Here, we generate character boxes from each word-level annotation in a weakly-supervised manner, as summarized in Fig. 4. **When a real image with word-level annotations is provided, the learned interim model predicts the character region score of the cropped word images to generate character-level bounding boxes. In order to reflect the reliability of the interim model’s prediction, the value of the confidence map over each word box is computed proportional to the number of the detected characters divided by the number of the ground truth characters, which is used for the learning weight during training.**
 - Fig. 6
   - <img src="https://user-images.githubusercontent.com/67457712/225799464-34a63110-2ba7-4fc4-b8f5-b8434ad65275.png" width="600">
@@ -56,7 +56,7 @@ $$If\ l(w) \lt l^{c}(w) \le 2l(w),\ then\ s_{conf}(w) = \frac{2l(w) - l^{c}(w)}{
 $$If\ l^{c}(w) \gt 2l(w), then\ s_{conf}(w) = 0$$
 ### Ground-truth Generation
 - Fig. 3. Ground-truth generation procedure
-  - <img src="https://user-images.githubusercontent.com/67457712/225799538-24a38a96-6116-4219-96cd-a8ad2ea0a4fd.png" width="600">
+  - <img src="https://user-images.githubusercontent.com/67457712/225799538-24a38a96-6116-4219-96cd-a8ad2ea0a4fd.png" width="700">
 - Since character bounding boxes on an image are generally distorted via perspective projections, we use the following steps to approximate and generate the ground truth for both the region score and the affinity score:
   - Prepare a 2-dimensional isotropic Gaussian map
   - Compute perspective transform between the Gaussian map region and each character box
