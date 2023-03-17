@@ -27,7 +27,8 @@ CRAFT-pytorch
 # Paper Summary
 - [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
 - Reference: https://medium.com/@msmapark2/character-region-awareness-for-text-detection-craft-paper-%EB%B6%84%EC%84%9D-da987b32609c
-## Character-level Awareness
+## Methodology
+- Character-level Awareness
   - These methods mainly train their networks to localize wordlevel bounding boxes. However, they may suffer in difficult cases, such as texts that are curved, deformed, or extremely long, which are hard to detect with a single bounding box.
   - Alternatively, character-level awareness has many advantages when handling challenging texts by linking the successive characters in a bottom-up manner.
   - In this paper, we propose a novel text detector that localizes the individual character regions and links the detected characters to a text instance.
