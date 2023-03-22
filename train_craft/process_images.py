@@ -140,24 +140,18 @@ def _upsample_image(img):
     return cv2.pyrUp(img)
 
 
-def load_image(url_or_path="", gray=False):
+def load_image(url_or_path=""):
     url_or_path = str(url_or_path)
 
     if "http" in url_or_path:
         img_arr = np.asarray(
             bytearray(requests.get(url_or_path).content), dtype="uint8"
         )
-        if not gray:
-            img = cv2.imdecode(img_arr, flags=cv2.IMREAD_COLOR)
-            img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
-        else:
-            img = cv2.imdecode(img_arr, flags=cv2.IMREAD_GRAYSCALE)
+        img = cv2.imdecode(img_arr, flags=cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
     else:
-        if not gray:
-            img = cv2.imread(url_or_path, flags=cv2.IMREAD_COLOR)
-            img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
-        else:
-            img = cv2.imread(url_or_path, flags=cv2.IMREAD_GRAYSCALE)
+        img = cv2.imread(url_or_path, flags=cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(src=img, code=cv2.COLOR_BGR2RGB)
     return img
 
 
