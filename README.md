@@ -1,30 +1,4 @@
-# What is 'CRAFT'?
-- [CRAFT: Character-Region Awareness For Text detection](https://github.com/clovaai/CRAFT-pytorch)
-
-# Directory Structure
-```
-CRAFT-pytorch
-├── LICENSE (x)
-├── README.md (x)
-├── basenet
-│   ├── __init__.py (x)
-│   └── vgg16_bn.py (o)
-├── craft.py (o)
-├── craft_utils.py (o)
-├── figures
-│   └── craft_example.gif (x)
-├── file_utils.py (x)
-├── imgproc.py (o)
-├── refinenet.py (o)
-├── requirements.txt (x)
-└── test.py (o)
-```
-
-# Model Architecture
-- Model architecture
-- <img src="https://miro.medium.com/max/1400/1*b6I-Bdj5itX7tllJ5HRKbg.png" width="500">
-
-# Paper Summary
+# Paper Reading
 - [Character Region Awareness for Text Detection](https://arxiv.org/pdf/1904.01941.pdf)
 - Reference: https://medium.com/@msmapark2/character-region-awareness-for-text-detection-craft-paper-%EB%B6%84%EC%84%9D-da987b32609c
 ## Methodology
@@ -112,6 +86,10 @@ $$L = \sum_{p} { S_{c}(p) \cdot \Bigl\\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{
 - Atrous Spatial Pyramid Pooling (ASPP) in is adopted to ensure a large receptive field for combining distant characters and words onto the same text line.
 ## References
 - [6] [Synthetic Data for Text Localisation in Natural Images](https://arxiv.org/pdf/1604.06646.pdf)
+
+# Model Architecture
+- Model architecture
+- <img src="https://miro.medium.com/max/1400/1*b6I-Bdj5itX7tllJ5HRKbg.png" width="500">
 
 # Region Score Map Difference by Scene Text Colors
 - Region score map from original image | Region score map from inverted image
