@@ -5,7 +5,7 @@ import torch
 
 from train_craft.process_images import (
     _get_canvas_same_size_as_image,
-    _get_masked_image
+    _mask_image
 )
 from train_craft.watershed import (
     _perform_watershed
@@ -37,7 +37,7 @@ with open(label_path, mode="r") as f:
                     pts=[np.array(word["points"], dtype="int64")],
                     color=(255, 255, 255)
                 )
-                masked_img = _get_masked_image(img=img, mask=word_mask)
+                masked_img = _mask_image(img=img, mask=word_mask)
                 pred_region, pred_affinity = _infer(img=masked_img, craft=interim, cuda=cuda)
 
                 pred_region_watershed = _perform_watershed(pred_region)

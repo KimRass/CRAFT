@@ -16,7 +16,7 @@ from process_images import (
     _get_canvas_same_size_as_image,
     _get_width_and_height,
     _dilate_mask,
-    _get_image_cropped_by_rectangle,
+    _crop_image,
     _reverse_jet_colormap,
     _downsample_image
 )
@@ -64,13 +64,13 @@ def get_cropped_images_and_labels(img_path, jsonl_path, size=200, sigma=0.5, cro
         data = defaultdict(list)
         for xmin, ymin, w, h, pixel_count in stats[1:]:
             if pixel_count >= px_thresh:
-                img_patch = _get_image_cropped_by_rectangle(
+                img_patch = _crop_image(
                     img=img, xmin=xmin, ymin=ymin, xmax=xmin + w, ymax=ymin + h
                 )
-                region_score_map_patch = _get_image_cropped_by_rectangle(
+                region_score_map_patch = _crop_image(
                     img=region_score_map, xmin=xmin, ymin=ymin, xmax=xmin + w, ymax=ymin + h
                 )
-                affinity_score_map_patch = _get_image_cropped_by_rectangle(
+                affinity_score_map_patch = _crop_image(
                     img=affinity_score_map, xmin=xmin, ymin=ymin, xmax=xmin + w, ymax=ymin + h
                 )
 

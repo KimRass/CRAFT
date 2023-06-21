@@ -120,7 +120,7 @@ def _dilate_mask(mask, kernel_shape=(3, 3), iterations=1):
     return mask
 
 
-def _get_image_cropped_by_rectangle(img, xmin, ymin, xmax, ymax):
+def _crop_image(img, xmin, ymin, xmax, ymax):
     if img.ndim == 3:
         return img[ymin: ymax, xmin: xmax, :]
     else:
@@ -206,7 +206,7 @@ def _invert_image(mask):
     return cv2.bitwise_not(mask)
 
 
-def _get_masked_image(img, mask, invert=False):
+def _mask_image(img, mask, invert=False):
     img = _convert_to_array(img)
     mask = _convert_to_2d(
         _convert_to_array(mask)
@@ -339,7 +339,7 @@ def perform_perspective_transform(src_quad, dst_quad, src_img, out_resolution, c
             pts=[src_quad.astype("int32")],
             color=(255, 255, 255),
         )
-        masked_src_img = _get_masked_image(img=src_img, mask=mask)
+        masked_src_img = _mask_image(img=src_img, mask=mask)
 
         warped_img = cv2.warpPerspective(src=masked_src_img, M=M, dsize=out_resolution)
     return warped_img

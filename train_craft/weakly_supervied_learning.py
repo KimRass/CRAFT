@@ -8,7 +8,7 @@ import torch
 from train_craft.process_images import (
     _get_canvas_same_size_as_image,
     _convert_to_2d,
-    _get_masked_image,
+    _mask_image,
     _get_minimum_area_bounding_rotated_rectangle,
     convert_polygon_to_mask
 )
@@ -38,7 +38,7 @@ def _get_largest_overlapping_mask(trg_mask, masks):
     maxim = 0
     largest_mask = _get_canvas_same_size_as_image(trg_mask, black=True)
     for mask in masks:
-        overlap_mask = _get_masked_image(img=trg_mask, mask=mask)
+        overlap_mask = _mask_image(img=trg_mask, mask=mask)
         summ = overlap_mask.sum()
         if summ > maxim:
             maxim = summ
