@@ -107,7 +107,8 @@ $$L = \sum_{p} { S_{c}(p) \cdot \Bigl\\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{
     - <img src="https://i.imgur.com/9Gnmet6.jpg" width="300">
 2. 분할된 이미지가 지정된 해상도보다 크다면 각각을 다시 분할합니다. 지정된 해상도 미만이 될 때까지 이것을 반복하여 수행합니다.
 - Region score map
-  - <img src="https://i.imgur.com/ZbXWURG.jpg" width="300">
+  <!-- - <img src="https://i.imgur.com/ZbXWURG.jpg" width="300"> -->
+  - <img src="https://github.com/flitto/image_processing_server/assets/105417680/5c8ecbe3-d714-4032-8751-22615c80cf75" width="300">
 
 # Other Papers
 - [Character Region Attention For Text Spotting](https://arxiv.org/pdf/2007.09629.pdf)
