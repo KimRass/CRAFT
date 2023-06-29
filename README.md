@@ -77,8 +77,6 @@ $$L = \sum_{p} { S_{c}(p) \cdot \Bigl\\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{
 ## Inference
 - The final output has two channels as score maps: the region score and the affinity score.
 - *At the inference stage, the final output can be delivered in various shapes, such as word boxes or character boxes, and further polygons*.
-- Inference
-  - <img src="https://miro.medium.com/max/1400/1*_EyygIYQyQPqUk-w-OaKjw.png" width="400">
 ## Link Refinement
 - In the CTW-1500 dataset’s case, two difficult characteristics coexist, namely annotations that are provided at the line-level and are of arbitrary polygons. To aid CRAFT in such cases, a small link refinement network, which we call the LinkRefiner, is used in conjunction with CRAFT.
 - *The input of the LinkRefiner is a concatenation of the region score, the affinity score, and the intermediate feature map of CRAFT, and the output is a refined affinity score adjusted for long texts. To combine characters, the refined affinity score is used instead of the original affinity score*, then the polygon generation is performed in the same way as it was performed for TotalText.
@@ -86,10 +84,6 @@ $$L = \sum_{p} { S_{c}(p) \cdot \Bigl\\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{
 - Atrous Spatial Pyramid Pooling (ASPP) in is adopted to ensure a large receptive field for combining distant characters and words onto the same text line.
 ## References
 - [6] [Synthetic Data for Text Localisation in Natural Images](https://arxiv.org/pdf/1604.06646.pdf)
-
-# Model Architecture
-- Model architecture
-- <img src="https://miro.medium.com/max/1400/1*b6I-Bdj5itX7tllJ5HRKbg.png" width="500">
 
 # Region Score Map Difference by Scene Text Colors
 - Region score map from original image | Region score map from inverted image
