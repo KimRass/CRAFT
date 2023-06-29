@@ -93,22 +93,21 @@ $$L = \sum_{p} { S_{c}(p) \cdot \Bigl\\{ \big( S_{r}(p) - S_{r}^{\*}(p) \big) ^{
 
 # Region Score Map Difference by Scene Text Colors
 - Region score map from original image | Region score map from inverted image
-  - <img src="https://i.imgur.com/6EnenSj.jpg" width="800">
+  - <img src="https://github.com/flitto/image_processing_server/assets/105417680/f3f97298-836f-4ed1-a5f4-2cb279406ff9" width="800">
 - 이미지를 반전한 후에 콤마 (';')를 더 잘 Detect하는 것을 볼 수 있습니다. 아마 학습에 사용된 이미지들에서 하얀색보다는 검은색의 텍스트가 더 많이 존재했기 때문일 것으로 추측됩니다.
 
 # Processing Super High Resolution Images
 - 해상도가 매우 큰 이미지는 그 자체로는 메모리 부족 등의 이유로 CRAFT를 사용하여 Infer할 수 없습니다. 따라서 이미지를 적당한 크기로 분할하여 처리해야 합니다.
 - 단 이미지를 분할할 때 하나의 문자가 둘 이상으로 나뉘어질 수 있습니다. 이렇게 되면 Text detection이 제대로 수행될 수 없으므로 유의해야 합니다.
 - Super high resolution image sample (7,256 x 13,483)
-  - <img src="https://i.imgur.com/w0ELNTk.jpg" width="300">
+  - <img src="https://github.com/flitto/image_processing_server/assets/105417680/df1be8ca-95de-4f6c-9633-7d23ee1ba4f0" width="300">
 ## Algorithm
 1. 이미지를 절반의 해상도로 분할하되 다음과 같이 3개로 분리합니다. 이를 통해 하나의 문자가 둘 이상으로 분리되어 Detect되지 못하는 것을 방지할 수 있습니다. 이들 각각을 CRAFT를 사용하여 Infer하고 그 결과들을 합칩니다.
   - Image splitting (Red -> Green -> Blue)
-    - <img src="https://i.imgur.com/9Gnmet6.jpg" width="300">
+    - <img src="https://github.com/flitto/image_processing_server/assets/105417680/5c8ecbe3-d714-4032-8751-22615c80cf75" width="300">
 2. 분할된 이미지가 지정된 해상도보다 크다면 각각을 다시 분할합니다. 지정된 해상도 미만이 될 때까지 이것을 반복하여 수행합니다.
 - Region score map
-  <!-- - <img src="https://i.imgur.com/ZbXWURG.jpg" width="300"> -->
-  - <img src="https://github.com/flitto/image_processing_server/assets/105417680/5c8ecbe3-d714-4032-8751-22615c80cf75" width="300">
+  - <img src="https://github.com/flitto/image_processing_server/assets/105417680/2910437c-9946-4226-b1d6-b9ee97248d22" width="300">
 
 # Other Papers
 - [Character Region Attention For Text Spotting](https://arxiv.org/pdf/2007.09629.pdf)
