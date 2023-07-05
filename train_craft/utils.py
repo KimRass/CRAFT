@@ -3,7 +3,7 @@ from time import time
 from datetime import timedelta
 
 
-def get_arguments():
+def get_args():
     parser = argparse.ArgumentParser(description="train_craft")
 
     parser.add_argument("--data_dir")

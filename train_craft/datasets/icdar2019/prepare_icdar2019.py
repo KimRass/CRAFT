@@ -3,16 +3,9 @@ import numpy as np
 import cv2
 import torch
 
-from train_craft.process_images import (
-    _get_canvas_same_size_as_image,
-    _mask_image
-)
-from train_craft.watershed import (
-    _perform_watershed
-)
-from train_craft.weakly_supervied_learning import (
-    get_confidence_score
-)
+from train_craft.image_utils import _get_canvas_same_size_as_image, _mask_image
+from train_craft.watershed import _perform_watershed
+from train_craft.weakly_supervied_learning import get_confidence_score
 
 
 label_path = "/Users/jongbeomkim/Downloads/train_labels.json"

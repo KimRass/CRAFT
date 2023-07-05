@@ -9,21 +9,12 @@ from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 # from torchvision.datasets import ImageFolder
 
-from utilities import (
-    get_arguments
-)
-from process_images import (
-    load_image
-)
-from train_craft.datasets.ctw.prepare_ctw import (
-    CTWDataset
-)
-from train_craft.loss import (
-    ScoreMapLoss
-)
-from train_craft.craft_utilities import (
-    load_craft_checkpoint
-)
+from utils import get_args
+from image_utils import load_image
+from train_craft.datasets.ctw.prepare_ctw import CTWDataset
+from train_craft.loss import ScoreMapLoss
+from train_craft.craft_utils import load_craft_checkpoint
+
 
 def train(data_dir, batch_size=1, cuda=False):
     n_epochs = 2
@@ -83,7 +74,7 @@ if __name__ == "__main__":
 
     cuda = torch.cuda.is_available()
 
-    args = get_arguments()
+    args = get_args()
 
     gc.collect()
     torch.cuda.empty_cache()

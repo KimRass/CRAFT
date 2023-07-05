@@ -5,10 +5,7 @@ from skimage.feature import peak_local_max
 from skimage.morphology import local_maxima
 from skimage.segmentation import watershed
 
-from process_images import (
-    _get_width_and_height,
-    _convert_to_2d
-)
+from image_utils import _get_width_and_height, _convert_to_2d
 
 
 def _perform_watershed(score_map, score_thresh=50):

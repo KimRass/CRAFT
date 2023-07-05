@@ -4,15 +4,9 @@ import torch
 import torchvision.transforms as T
 import cv2
 
-from train_craft.craft import (
-    CRAFT
-)
-from train_craft.torch_utilities import (
-    _get_state_dict
-)
-from process_images import (
-    _get_width_and_height
-)
+from train_craft.models.craft import CRAFT
+from train_craft.torch_utils import _get_state_dict
+from image_utils import _get_width_and_height
 
 
 def load_craft_checkpoint(cuda=False):

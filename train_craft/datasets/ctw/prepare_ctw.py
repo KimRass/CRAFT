@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 
-from process_images import (
+from image_utils import (
     load_image,
     save_image,
     _convert_to_2d,

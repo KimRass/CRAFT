@@ -5,19 +5,15 @@ from pprint import pprint
 from tqdm.auto import tqdm
 import torch
 
-from train_craft.process_images import (
+from train_craft.image_utils import (
     _get_canvas_same_size_as_image,
     _convert_to_2d,
     _mask_image,
     _get_minimum_area_bounding_rotated_rectangle,
     convert_polygon_to_mask
 )
-from train_craft.watershed import (
-    _perform_watershed
-)
-from train_craft.craft_utilities import (
-    _infer
-)
+from train_craft.watershed import _perform_watershed
+from train_craft.craft_utils import _infer
 from train_craft.generate_ground_truths import (
     _get_2d_isotropic_gaussian_map,
     generate_score_map,

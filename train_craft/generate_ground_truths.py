@@ -6,7 +6,7 @@ from sympy import Point2D, Line
 from itertools import combinations
 from itertools import product
 
-from train_craft.process_images import (
+from train_craft.image_utils import (
     _convert_to_2d,
     _get_canvas_same_size_as_image,
     _get_width_and_height,
