@@ -1,10 +1,20 @@
+# References:
 - https://github.com/HCIILAB/Scene-Text-Detection#5-ocr-service
-
+<!-- 
 - Region score map predicted using pre-trained model
     - <img src="https://i.imgur.com/tSjlj5b.jpg" width="800">
 - Region score map generated using annotated bounding boxes
-    - <img src="https://i.imgur.com/Lj0r973.jpg" width="800">
+    - <img src="https://i.imgur.com/Lj0r973.jpg" width="800"> -->
 
+# Data
+## CIDAR2016 dataset
+```
+icdar2017/: config.DATA_DIR
+├── ch8_training_images_1
+├── ch8_training_images_2
+...
+└── ch8_training_localization_transcription_gt_v2
+```
 
 # Online Hard Example Mining
 - [Training Region-based Object Detectors with Online Hard Example Mining](https://arxiv.org/pdf/1604.03540.pdf)
