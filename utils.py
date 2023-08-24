@@ -155,7 +155,8 @@ def _apply_jet_colormap(img):
 
 
 def vis_score_map(image, score_map):
-    score_map *= 255
-    score_map = score_map.astype("uint8")
-    score_map = _apply_jet_colormap(score_map)
-    show_blended_image(image, score_map)
+    copied = score_map.copy()
+    copied *= 255
+    copied = copied.astype("uint8")
+    copied = _apply_jet_colormap(copied)
+    show_blended_image(image, copied)

@@ -32,16 +32,16 @@ class CIDAR2017(Dataset):
         #     [i for i in list((self.data_dir).glob("**/*")) if "ch8_training_images_" in str(i.parent)]
         # )
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx, interim):
         img_stem = self.data_dir/f"""ch8_training_images_{(idx // 1000 + 1)}/img_{idx}"""
         img_path = img_stem.with_suffix(".jpg")
         if not img_path.exists():
             img_path.with_suffix(".png")
         image = Image.open(img_path).convert("RGB")
-        # transform = T.Compose([
-        #     T.ToTensor(),
-        #     T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        # ])
+        transform = T.Compose([
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
         # image = transform(image)
         
         label_path = self.data_dir/f"""ch8_training_localization_transcription_gt_v2/gt_img_{idx}.txt"""
@@ -87,13 +87,33 @@ if __name__ == "__main__":
     )
     
     img = np.array(image)
-    show_image(img)
+    # show_image(img)
     for src_quad in dst_quads:
         dst_quad = _get_dst_quad(src_quad)
         M = cv2.getPerspectiveTransform(src=src_quad, dst=dst_quad)
         w = round(dst_quad[2, 0])
         h = round(dst_quad[2, 1])
         output = cv2.warpPerspective(src=img, M=M, dsize=(w, h))
+
+        temp = torch.Tensor(output)
+        temp /= 255
+        temp = temp.permute(2, 0, 1)
+        temp = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(temp.unsqueeze(0))
+
+        with torch.no_grad():
+            z, feat = model(temp)
+        z0 = z[0, :, :, 0].detach().cpu().numpy()
+        z0 = cv2.resize(z0, dsize=(w, h))
+        
+        M = cv2.getPerspectiveTransform(src=dst_quad, dst=src_quad)
+        out = cv2.warpPerspective(src=z0, M=M, dsize=image.size)
+        out *= 255
+        z0.min(), out.min()
+        out = out.astype("uint8")
+        vis_score_map(image=image, score_map=out)
+            
+        
+        transform(temp)
         show_image(output)
     
     # _, h, w = image.shape
