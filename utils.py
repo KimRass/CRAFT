@@ -9,6 +9,36 @@ from time import time
 from datetime import timedelta
 from collections import OrderedDict
 
+COLORS = (
+    (230, 25, 75),
+    (60, 180, 75),
+    (255, 255, 25),
+    (0, 130, 200),
+    (245, 130, 48),
+    (145, 30, 180),
+    (70, 240, 250),
+    (240, 50, 230),
+    (210, 255, 60),
+    (250, 190, 212),
+    (0, 128, 128),
+    (220, 190, 255),
+    (170, 110, 40),
+    (255, 250, 200),
+    (128, 0, 0),
+    (170, 255, 195),
+    (128, 128, 0),
+    (255, 215, 180),
+    (0, 0, 128),
+    (128, 128, 128),
+)
+
+
+def _to_2d(img):
+    if img.ndim == 3:
+        return img[:, :, 0]
+    else:
+        return img
+
 
 def _pad_input_image(image):
     """
@@ -17,8 +47,12 @@ def _pad_input_image(image):
     _, _, h, w = image.shape
     if h % 16 != 0:
         new_h = h + (16 - h % 16)
+    else:
+        new_h = h
     if w % 16 != 0:
         new_w = w + (16 - w % 16)
+    else:
+        new_w = w
     new_image = TF.pad(image, padding=(0, 0, new_w - w, new_h - h), padding_mode="constant")
     return new_image
 
@@ -160,3 +194,28 @@ def vis_score_map(image, score_map):
     copied = copied.astype("uint8")
     copied = _apply_jet_colormap(copied)
     show_blended_image(image, copied)
+
+
+def _get_canvas(img, black=False):
+    if black:
+        return np.zeros_like(img).astype("uint8")
+    else:
+        return (np.ones_like(img) * 255).astype("uint8")
+
+
+def _repaint_segmentation_map(seg_map):
+    canvas_r = _get_canvas(seg_map, black=True)
+    canvas_g = _get_canvas(seg_map, black=True)
+    canvas_b = _get_canvas(seg_map, black=True)
+
+    remainder_map = seg_map % len(COLORS) + 1
+    for remainder, (r, g, b) in enumerate(COLORS, start=1):
+        canvas_r[remainder_map == remainder] = r
+        canvas_g[remainder_map == remainder] = g
+        canvas_b[remainder_map == remainder] = b
+    canvas_r[seg_map == 0] = 0
+    canvas_g[seg_map == 0] = 0
+    canvas_b[seg_map == 0] = 0
+
+    dstacked = np.dstack([canvas_r, canvas_g, canvas_b])
+    return dstacked

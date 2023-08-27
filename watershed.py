@@ -5,26 +5,30 @@ from skimage.feature import peak_local_max
 from skimage.morphology import local_maxima
 from skimage.segmentation import watershed
 
-from image_utils import _get_width_and_height, _convert_to_2d
+from utils import _to_2d, _repaint_segmentation_map
 
 
 def _perform_watershed(score_map, score_thresh=50):
-    # score_map = pred_region.copy()
-    # score_map = region_score_map.copy()
     trimmed_score_map = score_map.copy()
-    trimmed_score_map[trimmed_score_map < 190] = 0
+    # trimmed_score_map[trimmed_score_map < 190] = 0
+    # show_image(trimmed_score_map)
+    # Image.fromarray(trimmed_score_map).show()
 
     markers = local_maxima(image=trimmed_score_map)
     _, markers = cv2.connectedComponents(image=markers.astype("int8"), connectivity=8)
 
     _, region_mask = cv2.threshold(src=score_map, thresh=score_thresh, maxval=255, type=cv2.THRESH_BINARY)
-    watersheded = watershed(image=-score_map, markers=markers, mask=_convert_to_2d(region_mask))
+    watersheded = watershed(image=-score_map, markers=markers, mask=_to_2d(region_mask))
     # show_image(watersheded, img)
     return watersheded
-temp = _perform_watershed(region_score_map, score_thresh=80)
-show_image(temp, d1, 0.1)
-temp2 = _get_region_segmentation_map(region_score_map, region_thresh=80)
-show_image(temp2, d1, 0.1)
+score_map = region_map
+region_seg = _perform_watershed(region_map, score_thresh=100)
+region_seg = _repaint_segmentation_map(region_seg)
+show_blended_image(patch, region_seg)
+# temp = _perform_watershed(region_score_map, score_thresh=80)
+# show_image(temp, d1, 0.1)
+# temp2 = _get_region_segmentation_map(region_score_map, region_thresh=80)
+# show_image(temp2, d1, 0.1)
 # show_image(region_score_map)
 
 
@@ -64,6 +68,6 @@ show_image(temp2, d1, 0.1)
 #         src=score_map, thresh=score_thresh, maxval=255, type=cv2.THRESH_BINARY
 #     )
 #     show_image(local_max_arr, img, 0.1)
-#     segmentation_map = watershed(image=-score_map, markers=markers, mask=_convert_to_2d(region_mask))
+#     segmentation_map = watershed(image=-score_map, markers=markers, mask=_to_2d(region_mask))
 #     # show_image(segmentation_map, img)
 #     return segmentation_map

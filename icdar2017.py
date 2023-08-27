@@ -1,6 +1,4 @@
 # Source: https://rrc.cvc.uab.es/?ch=8&com=downloads
-import sys
-sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/craft")
 
 import torch
 import torch.nn.functional as F
@@ -17,11 +15,18 @@ import numpy as np
 import config
 from utils import draw_quads
 from model import CRAFT
-from utils import load_ckpt, vis_craft_output, _normalize_score_map, _postprocess_score_map
+from utils import (
+    load_ckpt,
+    vis_craft_output,
+    _normalize_score_map,
+    _postprocess_score_map,
+    _get_dst_quad,
+    _pad_input_image,
+)
 
 
 class CIDAR2017(Dataset):
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, interim):
         super().__init__()
 
         self.data_dir = Path(data_dir)
@@ -32,11 +37,11 @@ class CIDAR2017(Dataset):
         #     [i for i in list((self.data_dir).glob("**/*")) if "ch8_training_images_" in str(i.parent)]
         # )
 
-    def __getitem__(self, idx, interim):
-        img_stem = self.data_dir/f"""ch8_training_images_{(idx // 1000 + 1)}/img_{idx}"""
+    def __getitem__(self, idx):
+        img_stem = self.data_dir/f"""ch8_training_images_{((idx - 1) // 1000 + 1)}/img_{idx}"""
         img_path = img_stem.with_suffix(".jpg")
         if not img_path.exists():
-            img_path.with_suffix(".png")
+            img_path = img_stem.with_suffix(".png")
         image = Image.open(img_path).convert("RGB")
         transform = T.Compose([
             T.ToTensor(),
@@ -60,6 +65,50 @@ class CIDAR2017(Dataset):
         }
 
 
+def _crop_using_src_quad(img, src_quad):
+    dst_quad = _get_dst_quad(src_quad)
+    M = cv2.getPerspectiveTransform(src=src_quad, dst=dst_quad)
+    w = round(dst_quad[2, 0])
+    h = round(dst_quad[2, 1])
+    output = cv2.warpPerspective(src=img, M=M, dsize=(w, h))
+    return output
+
+
+transfrom = T.Compose([
+    T.ToTensor(),
+    T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+
+
+def _z_to_array(z):
+    score_map = np.clip(a=z, a_min=0, a_max=1)
+    score_map *= 255
+    score_map = score_map.astype("uint8")
+    return score_map
+
+
+def _infer(model, img):
+    model.eval()
+
+    h, w, _ = img.shape
+
+    image = transfrom(img)
+    image = image.unsqueeze(0)
+    image = _pad_input_image(image)
+    with torch.no_grad():
+        z, _ = model(image)
+    z = z.permute(0, 3, 1, 2)
+    z = F.interpolate(z, scale_factor=2)
+    z = z[..., : h, : w]
+
+    z0 = z.squeeze()[0, ...].detach().cpu().numpy()
+    z1 = z.squeeze()[1, ...].detach().cpu().numpy()
+
+    region_map = _z_to_array(z0)
+    link_map = _z_to_array(z1)
+    return region_map, link_map
+
+
 if __name__ == "__main__":
     model = CRAFT(pretrained=True)
     ckpt_path = "/Users/jongbeomkim/Downloads/craft_mlt_25k.pth"
@@ -67,69 +116,30 @@ if __name__ == "__main__":
     model.load_state_dict(ckpt)
 
     data_dir = "/Users/jongbeomkim/Documents/datasets/icdar2017/"
-    ds = CIDAR2017(data_dir)
-    batch = ds[127]
+    ds = CIDAR2017(data_dir=data_dir, interim=model)
+    batch = ds[2000]
     image = batch["image"]
     dst_quads = batch["quadrilaterals"]
     # image.show()
     # vis = draw_quads(image=image, quads=quads)
     # vis.show()
-
-    gauss = _get_2d_isotropic_gaussian_map()
-    w = h = 200
-    margin = 0.1
-    xmin = w * margin
-    ymin = h * margin
-    xmax = w * (1 - margin)
-    ymax = h * (1 - margin)
-    src_quad = np.array(
-        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32"
-    )
     
     img = np.array(image)
-    # show_image(img)
+    show_image(img)
     for src_quad in dst_quads:
-        dst_quad = _get_dst_quad(src_quad)
-        M = cv2.getPerspectiveTransform(src=src_quad, dst=dst_quad)
-        w = round(dst_quad[2, 0])
-        h = round(dst_quad[2, 1])
-        output = cv2.warpPerspective(src=img, M=M, dsize=(w, h))
-
-        temp = torch.Tensor(output)
-        temp /= 255
-        temp = temp.permute(2, 0, 1)
-        temp = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(temp.unsqueeze(0))
-
-        with torch.no_grad():
-            z, feat = model(temp)
-        z0 = z[0, :, :, 0].detach().cpu().numpy()
-        z0 = cv2.resize(z0, dsize=(w, h))
+        src_quad = dst_quads[0]
+        patch = _crop_using_src_quad(img=img, src_quad=src_quad)
         
-        M = cv2.getPerspectiveTransform(src=dst_quad, dst=src_quad)
-        out = cv2.warpPerspective(src=z0, M=M, dsize=image.size)
-        out *= 255
-        z0.min(), out.min()
-        out = out.astype("uint8")
-        vis_score_map(image=image, score_map=out)
-            
-        
-        transform(temp)
-        show_image(output)
-    
-    # _, h, w = image.shape
-    w, h = image.size
-    gt = np.zeros(shape=(h, w))
-    for dst_quad in dst_quads:
-        M = cv2.getPerspectiveTransform(src=src_quad, dst=dst_quad)
-        output = cv2.warpPerspective(src=gauss, M=M, dsize=(w, h))
-        gt = np.maximum(gt, output)
-    vis_score_map(image=image, score_map=gt)
-    
-        model.eval()
-        _, h, w = transformed.shape
-        with torch.no_grad():
-            z, feat = model(transformed.unsqueeze(0))
-        z0 = z[0, :, :, 0].detach().cpu().numpy()
-        resized_z0 = cv2.resize(z0, dsize=(w, h))
-        region_map = _normalize_score_map(resized_z0)
-        # Image.fromarray(region_map).show()
+        region_map, link_map = _infer(model=model, img=patch)
+        show_blended_image(patch, _apply_jet_colormap(region_map))
+
+    # gauss = _get_2d_isotropic_gaussian_map()
+    # w = h = 200
+    # margin = 0.1
+    # xmin = w * margin
+    # ymin = h * margin
+    # xmax = w * (1 - margin)
+    # ymax = h * (1 - margin)
+    # src_quad = np.array(
+    #     [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], dtype="float32"
+    # )
